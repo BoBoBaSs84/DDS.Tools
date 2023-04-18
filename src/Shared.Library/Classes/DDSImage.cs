@@ -16,16 +16,6 @@ public sealed class DDSImage
 	public byte[] ImageData => _image.Data;
 
 	/// <summary>
-	/// The image width.
-	/// </summary>
-	public int Width => _image.Width;
-
-	/// <summary>
-	/// The image height.
-	/// </summary>
-	public int Height => _image.Height;
-
-	/// <summary>
 	/// Initializes an instance of <see cref="DDSImage"/> class.
 	/// </summary>
 	/// <param name="filePath">The path to the image file.</param>
