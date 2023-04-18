@@ -40,5 +40,14 @@ namespace DDS2PNG.Properties {
                 return ((bool)(this["SeparateMaps"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SeparateBySize {
+            get {
+                return ((bool)(this["SeparateBySize"]));
+            }
+        }
     }
 }

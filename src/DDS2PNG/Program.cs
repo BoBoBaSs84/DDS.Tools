@@ -14,7 +14,10 @@ internal sealed class Program
 
 		IList<Todo> todos = GetTodos(param.SourceFolder);
 
-		IList<string> todosDone = GetThigsDone(param.CompressionLevel, todos, param.SeparateMaps);
+		Console.WriteLine($"Found {todos.Count} files to process.\nPress key to start.");
+		_ = Console.ReadKey();
+
+		IList<string> todosDone = GetThigsDone(param.CompressionLevel, todos, param.SeparateMaps, param.SeparateBySize);
 
 		Console.Write($"\n" +
 			$"Conversion completed.\n" +
@@ -42,8 +45,9 @@ internal sealed class Program
 
 		int level = Settings.Default.CompressionLevel;
 		bool maps = Settings.Default.SeparateMaps;
+		bool size = Settings.Default.SeparateBySize;
 
-		return new(args[0], level, maps);
+		return new(args[0], level, maps, size);
 	}
 
 	private static IList<Todo> GetTodos(string sourcePath)
@@ -54,6 +58,9 @@ internal sealed class Program
 		if (!allFiles.Any())
 			return todos;
 
+		DirectoryInfo directoryInfo = new(sourcePath);
+		string targetPath = Path.Combine(directoryInfo.Parent!.FullName, Constants.Result.Folder);
+
 		foreach (string file in allFiles)
 		{
 			FileInfo fileInfo = new(file);
@@ -61,18 +68,15 @@ internal sealed class Program
 
 			string md5String = Helper.GetMD5String(image.ImageData);
 			string relativePath = $"{fileInfo.Directory!.Parent!.Name}{fileInfo.DirectoryName!.Replace(sourcePath, string.Empty)}";
-			string targetPath = Path.Combine(fileInfo.Directory.Parent!.Parent!.FullName, Constants.Result.Folder);
 
 			Todo todo = new(fileInfo.Name, relativePath, file, targetPath, md5String);
 			todos.Add(todo);
 		}
 
-		Console.WriteLine($"Found {todos.Count} files.");
-
 		return todos;
 	}
 
-	private static IList<string> GetThigsDone(int level, IList<Todo> todos, bool separateMaps = false)
+	private static IList<string> GetThigsDone(int level, IList<Todo> todos, bool separateMaps = false, bool separateBySize = false)
 	{
 		if (separateMaps)
 		{
@@ -85,7 +89,7 @@ internal sealed class Program
 				_ = Directory.CreateDirectory(targetPath);
 				string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
 
-				SaveImage(todo, newFilePath, level);
+				SaveImage(todo, newFilePath, level, separateBySize);
 			}
 
 			foreach (Todo todo in todos.Where(x => x.FileName.EndsWith($"_d.{Constants.Extension.DDS}", StringComparison.CurrentCultureIgnoreCase)))
@@ -97,7 +101,7 @@ internal sealed class Program
 				_ = Directory.CreateDirectory(targetPath);
 				string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
 
-				SaveImage(todo, newFilePath, level);
+				SaveImage(todo, newFilePath, level, separateBySize);
 			}
 		}
 
@@ -110,7 +114,7 @@ internal sealed class Program
 			_ = Directory.CreateDirectory(targetPath);
 			string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
 
-			SaveImage(todo, newFilePath, level);
+			SaveImage(todo, newFilePath, level, separateBySize);
 		}
 
 		string result = Helper.JsonResult(todos);
@@ -120,9 +124,11 @@ internal sealed class Program
 		return todosDone;
 	}
 
-	private static void SaveImage(Todo todo, string targetFolder, int level)
+	private static void SaveImage(Todo todo, string targetFolder, int level, bool separateBySize)
 	{
 		DDSImage image = new(todo.FullPathName);
+		int size = image.Width * image.Height / 1024;
+		targetFolder = separateBySize ? Path.Combine(targetFolder, $"{size}") : targetFolder;
 		image.Save(targetFolder, level);
 		todosDone.Add(todo.MD5String);
 		Console.WriteLine($"[{DateTime.Now}]\t{todo.RelativePath}|{targetFolder}");
