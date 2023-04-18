@@ -1,18 +1,20 @@
-﻿using Shared.Library.Classes;
-using DIR = Shared.Library.Classes.Constants.Directories;
-using EXT = Shared.Library.Classes.Constants.Extensions;
+﻿using DDS2PNG.Classes;
+using DDS2PNG.Properties;
+using Shared.Library.Classes;
 
 namespace DDS2PNG;
 
 internal sealed class Program
 {
+	private static readonly IList<string> todosDone = new List<string>();
+
 	private static void Main(string[] args)
 	{
-		(string directory, int level) = CheckArguments(args);
+		Parameter param = GetParameter(args);
 
-		IList<Todo> todos = GetTodos(directory);
+		IList<Todo> todos = GetTodos(param.SourceFolder);
 
-		IList<string> todosDone = GetThigsDone(directory, level, todos);
+		IList<string> todosDone = GetThigsDone(param.CompressionLevel, todos, param.SeparateMaps);
 
 		Console.Write($"\n" +
 			$"Conversion completed.\n" +
@@ -23,25 +25,13 @@ internal sealed class Program
 		_ = Console.ReadKey();
 	}
 
-	private static (string directory, int level) CheckArguments(string[] args)
+	private static Parameter GetParameter(string[] args)
 	{
-		if (args.Length < 2)
+		if (args.Length < 1)
 		{
-			string message = $"First argument should be the path ie.: 'C:\\Temp'\n" +
-				$"Second argument should be the compression level as integer.";
-
-			Console.WriteLine(message);
+			Console.WriteLine($"Please provide the texture source path ie.: 'D:\\Data\\Textures'");
 			Environment.Exit(1);
 		}
-
-		if (!int.TryParse(args[1], out _))
-		{
-			string message = $"Second argument is not an integer. ({args[1]})";
-			Console.WriteLine(message);
-			Environment.Exit(1);
-		}
-
-		int level = int.Parse(args[1], NumberStyles.Integer, CultureInfo.InvariantCulture);
 
 		if (!Directory.Exists(args[0]))
 		{
@@ -50,52 +40,91 @@ internal sealed class Program
 			Environment.Exit(1);
 		}
 
-		string directory = args[0];
+		int level = Settings.Default.CompressionLevel;
+		bool maps = Settings.Default.SeparateMaps;
 
-		return (directory, level);
+		return new(args[0], level, maps);
 	}
 
-	private static IList<Todo> GetTodos(string directory)
+	private static IList<Todo> GetTodos(string sourcePath)
 	{
-		string[] allFiles = Directory.GetFiles(directory, $"*.{EXT.DDS}", SearchOption.AllDirectories);
-
 		IList<Todo> todos = new List<Todo>();
+		string[] allFiles = Directory.GetFiles(sourcePath, $"*.{Constants.Extension.DDS}", SearchOption.AllDirectories);
+
+		if (!allFiles.Any())
+			return todos;
 
 		foreach (string file in allFiles)
 		{
 			FileInfo fileInfo = new(file);
-			DDSImage image = new(fileInfo.FullName);
-			Todo todo = new(fileInfo.Name, fileInfo.DirectoryName!, Helper.GetMD5String(image.ImageData), image);
+			DDSImage image = new(file);
+
+			string md5String = Helper.GetMD5String(image.ImageData);
+			string relativePath = $"{fileInfo.Directory!.Parent!.Name}{fileInfo.DirectoryName!.Replace(sourcePath, string.Empty)}";
+			string targetPath = Path.Combine(fileInfo.Directory.Parent!.Parent!.FullName, Constants.Result.Folder);
+
+			Todo todo = new(fileInfo.Name, relativePath, file, targetPath, md5String);
 			todos.Add(todo);
 		}
+
+		Console.WriteLine($"Found {todos.Count} files.");
 
 		return todos;
 	}
 
-	private static IList<string> GetThigsDone(string directory, int level, IList<Todo> todos)
+	private static IList<string> GetThigsDone(int level, IList<Todo> todos, bool separateMaps = false)
 	{
-		IList<string> todosDone = new List<string>();
+		if (separateMaps)
+		{
+			foreach (Todo todo in todos.Where(x => x.FileName.EndsWith($"_n.{Constants.Extension.DDS}", StringComparison.CurrentCultureIgnoreCase)))
+			{
+				if (todosDone.Contains(todo.MD5String))
+					continue;
 
-		DirectoryInfo dirInfo = new(directory);
-		string convertedPath = Path.Combine(dirInfo.Parent!.FullName, DIR.Converted);
-		_ = Directory.CreateDirectory(convertedPath);
+				string targetPath = Path.Combine(todo.TargetPath, "normalMaps");
+				_ = Directory.CreateDirectory(targetPath);
+				string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
+
+				SaveImage(todo, newFilePath, level);
+			}
+
+			foreach (Todo todo in todos.Where(x => x.FileName.EndsWith($"_d.{Constants.Extension.DDS}", StringComparison.CurrentCultureIgnoreCase)))
+			{
+				if (todosDone.Contains(todo.MD5String))
+					continue;
+
+				string targetPath = Path.Combine(todo.TargetPath, "diffuseMaps");
+				_ = Directory.CreateDirectory(targetPath);
+				string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
+
+				SaveImage(todo, newFilePath, level);
+			}
+		}
 
 		foreach (Todo todo in todos)
 		{
 			if (todosDone.Contains(todo.MD5String))
 				continue;
 
-			string newFilePath = Path.Combine(convertedPath, $"{todo.MD5String}.{EXT.PNG}");
-			todo.Image.Save(newFilePath, level);
-			todosDone.Add(todo.MD5String);
+			string targetPath = Path.Combine(todo.TargetPath, "textures");
+			_ = Directory.CreateDirectory(targetPath);
+			string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
 
-			Console.WriteLine($"[{DateTime.Now}]\t{todo.FullName}|{newFilePath}");
+			SaveImage(todo, newFilePath, level);
 		}
 
 		string result = Helper.JsonResult(todos);
-		string resultPath = Path.Combine(convertedPath, "result.json");
+		string resultPath = Path.Combine(todos.First().TargetPath, Constants.Result.FileName);
 		File.WriteAllText(resultPath, result);
 
 		return todosDone;
+	}
+
+	private static void SaveImage(Todo todo, string targetFolder, int level)
+	{
+		DDSImage image = new(todo.FullPathName);
+		image.Save(targetFolder, level);
+		todosDone.Add(todo.MD5String);
+		Console.WriteLine($"[{DateTime.Now}]\t{todo.RelativePath}|{targetFolder}");
 	}
 }

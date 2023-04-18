@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace Shared.Library.Classes;
+﻿namespace Shared.Library.Classes;
 
 /// <summary>
 /// The library constants class.
@@ -8,9 +6,9 @@ namespace Shared.Library.Classes;
 public static class Constants
 {
 	/// <summary>
-	/// The library extensions class.
+	/// The library extension class.
 	/// </summary>
-	public static class Extensions
+	public static class Extension
 	{
 		/// <summary>
 		/// The dds extension.
@@ -24,13 +22,17 @@ public static class Constants
 	}
 
 	/// <summary>
-	/// The library directories class.
+	/// The library result class.
 	/// </summary>
-	public static class Directories
+	public static class Result
 	{
 		/// <summary>
-		/// The converted directory.
+		/// The result folder name.
 		/// </summary>
-		public const string Converted = "Converted";
+		public const string Folder = "Result";
+		/// <summary>
+		/// The result file name.
+		/// </summary>
+		public const string FileName = "Result.json";
 	}
 }
