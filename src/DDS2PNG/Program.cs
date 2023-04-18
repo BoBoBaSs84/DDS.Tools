@@ -128,6 +128,6 @@ internal sealed class Program
 		DDSImage image = new(todo.FullPathName);
 		image.Save(targetFolder, level);
 		todosDone.Add(todo.MD5String);
-		Console.WriteLine($"[{DateTime.Now}]\t{todo.RelativePath}|{targetFolder}");
+		Console.WriteLine($"[{DateTime.Now}]\t{Path.Combine(todo.RelativePath, todo.FileName)} -> {targetFolder}");
 	}
 }
