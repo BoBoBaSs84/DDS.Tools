@@ -10,6 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="BCnEncoder.Net.ImageSharp" Version="1.1.1" />
 		<PackageReference Include="Pfim" Version="0.11.2" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
 	</ItemGroup>
