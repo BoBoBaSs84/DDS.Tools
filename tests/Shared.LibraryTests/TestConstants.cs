@@ -4,8 +4,10 @@ internal static class TestConstants
 {
 	internal const string SourceFolder = "SourceResources";
 	internal const string TargetFolder = "TargetResources";
-	internal const string TestDdsItem = "outfit101m.dds";
-	internal const string TestDdsSaveItem = "outfit101m_test.dds";
-	internal const string TestPngItem = "outfit101m.png";
-	internal const string TestPngSaveItem = "outfit101m_test.png";
+
+	internal const string DdsImage = "outfit101m.dds";
+	internal const string DdsImageSave = "outfit101m_test.dds";
+
+	internal const string PngImage = "outfit101m.png";
+	internal const string PngImageSave = "outfit101m_test.png";
 }

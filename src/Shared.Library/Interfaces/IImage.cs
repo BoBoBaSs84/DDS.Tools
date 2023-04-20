@@ -16,11 +16,6 @@ public interface IImage
 	string FilePath { get; }
 
 	/// <summary>
-	/// Does the image have an alpha channel?
-	/// </summary>
-	bool HasAlphaChannel { get; }
-
-	/// <summary>
 	/// The heigth of the image.
 	/// </summary>
 	int Heigth { get; }

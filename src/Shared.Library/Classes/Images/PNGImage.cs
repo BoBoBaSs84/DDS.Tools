@@ -15,7 +15,6 @@ internal sealed class PNGImage : IImage
 
 	public string FileName { get; }
 	public string FilePath { get; }
-	public bool HasAlphaChannel { get; }
 	public int Heigth { get; }
 	public byte[] ImageData { get; }
 	public string Md5Hash { get; }
@@ -35,7 +34,6 @@ internal sealed class PNGImage : IImage
 		_image = Image.Load<Rgba32>(fileStream);
 		Width = _image.Width;
 		Heigth = _image.Height;
-		HasAlphaChannel = _image.PixelType.AlphaRepresentation.HasValue;
 
 		fileStream.Position = 0;
 		ImageData = Helper.StreamToByteArray(fileStream);

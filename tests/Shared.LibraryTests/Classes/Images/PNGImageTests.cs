@@ -17,11 +17,11 @@ public class PNGImageTests
 	}
 	
 	[TestMethod]
-	[DeploymentItem(TC.TestPngItem, TC.SourceFolder)]
+	[DeploymentItem(TC.PngImage, TC.SourceFolder)]
 	public void SaveTest()
 	{
-		string sourceFolder = $"{TC.SourceFolder}\\{TC.TestPngItem}";
-		string targetFolder = $"{TC.TargetFolder}\\{TC.TestDdsSaveItem}";
+		string sourceFolder = $"{TC.SourceFolder}\\{TC.PngImage}";
+		string targetFolder = $"{TC.TargetFolder}\\{TC.DdsImageSave}";
 
 		IImage image = ImageFactory.CreatePngImage(sourceFolder);
 		image.Save(targetFolder);
@@ -37,25 +37,25 @@ public class PNGImageTests
 	}
 
 	[TestMethod]
-	[DeploymentItem(TC.TestPngItem, TC.SourceFolder)]
+	[DeploymentItem(TC.PngImage, TC.SourceFolder)]
 	[ExpectedException(typeof(ArgumentOutOfRangeException))]
 	public void SaveWithCompressionExceptionTest()
 	{
 		int compressionLevel = 99;
-		string sourceFolder = $"{TC.SourceFolder}\\{TC.TestPngItem}";
-		string targetFolder = $"{TC.TargetFolder}\\{TC.TestDdsSaveItem}";
+		string sourceFolder = $"{TC.SourceFolder}\\{TC.PngImage}";
+		string targetFolder = $"{TC.TargetFolder}\\{TC.DdsImageSave}";
 
 		IImage image = ImageFactory.CreatePngImage(sourceFolder);
 		image.Save(targetFolder, compressionLevel);
 	}
 
 	[TestMethod]
-	[DeploymentItem(TC.TestPngItem, TC.SourceFolder)]
+	[DeploymentItem(TC.PngImage, TC.SourceFolder)]
 	public void SaveWithCompressionTest()
 	{
 		int compressionLevel = 0;
-		string sourceFolder = $"{TC.SourceFolder}\\{TC.TestPngItem}";
-		string targetFolder = $"{TC.TargetFolder}\\{compressionLevel}_{TC.TestDdsSaveItem}";
+		string sourceFolder = $"{TC.SourceFolder}\\{TC.PngImage}";
+		string targetFolder = $"{TC.TargetFolder}\\{compressionLevel}_{TC.DdsImageSave}";
 
 		IImage image = ImageFactory.CreatePngImage(sourceFolder);
 		image.Save(targetFolder, compressionLevel);
