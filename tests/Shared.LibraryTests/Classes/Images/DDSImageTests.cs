@@ -8,12 +8,18 @@ namespace Shared.LibraryTests.Classes.Images;
 [TestClass]
 public class DDSImageTests
 {
+	public DDSImageTests()
+	{
+		Directory.CreateDirectory(TC.SourceFolder);
+		Directory.CreateDirectory(TC.TargetFolder);
+	}
+
 	[TestMethod]
-	[DeploymentItem(TC.TestDdsItem, TC.TestResourcesFolder)]
+	[DeploymentItem(TC.TestDdsItem, TC.SourceFolder)]
 	public void SaveTest()
 	{
-		string sourceFolder = $"{TC.TestResourcesFolder}\\{TC.TestDdsItem}";
-		string targetFolder = $"{TC.TestResourcesFolder}\\{TC.TestPngSaveItem}";
+		string sourceFolder = $"{TC.SourceFolder}\\{TC.TestDdsItem}";
+		string targetFolder = $"{TC.TargetFolder}\\{TC.TestPngSaveItem}";
 
 		IImage image = ImageFactory.CreateDdsImage(sourceFolder);
 		image.Save(targetFolder);
@@ -24,25 +30,25 @@ public class DDSImageTests
 	}
 
 	[TestMethod]
-	[DeploymentItem(TC.TestDdsItem, TC.TestResourcesFolder)]
+	[DeploymentItem(TC.TestDdsItem, TC.SourceFolder)]
 	[ExpectedException(typeof(ArgumentOutOfRangeException))]
 	public void SaveWithCompressionExceptionTest()
 	{
 		int compressionLevel = 99;
-		string sourceFolder = $"{TC.TestResourcesFolder}\\{TC.TestDdsItem}";
-		string targetFolder = $"{TC.TestResourcesFolder}\\{TC.TestPngSaveItem}";
+		string sourceFolder = $"{TC.SourceFolder}\\{TC.TestDdsItem}";
+		string targetFolder = $"{TC.TargetFolder}\\{TC.TestPngSaveItem}";
 
 		IImage image = ImageFactory.CreateDdsImage(sourceFolder);
 		image.Save(targetFolder, compressionLevel);
 	}
 
 	[TestMethod]
-	[DeploymentItem(TC.TestDdsItem, TC.TestResourcesFolder)]
+	[DeploymentItem(TC.TestDdsItem, TC.SourceFolder)]
 	public void SaveWithCompressionTest()
 	{
 		int compressionLevel = 9;
-		string sourceFolder = $"{TC.TestResourcesFolder}\\{TC.TestDdsItem}";
-		string targetFolder = $"{TC.TestResourcesFolder}\\{TC.TestPngSaveItem}";
+		string sourceFolder = $"{TC.SourceFolder}\\{TC.TestDdsItem}";
+		string targetFolder = $"{TC.TargetFolder}\\{compressionLevel}_{TC.TestPngSaveItem}";
 
 		IImage image = ImageFactory.CreateDdsImage(sourceFolder);
 		image.Save(targetFolder, compressionLevel);

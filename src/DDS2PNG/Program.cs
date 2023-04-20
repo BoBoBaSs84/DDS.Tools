@@ -12,22 +12,30 @@ internal sealed class Program
 
 	private static void Main(string[] args)
 	{
-		Parameter param = GetParameter(args);
+		try
+		{
+			Parameter param = GetParameter(args);
 
-		IList<Todo> todos = GetTodos(param.SourceFolder);
+			IList<Todo> todos = GetTodos(param.SourceFolder);
 
-		Console.WriteLine($"Found {todos.Count} files to process.\nPress key to start.");
-		_ = Console.ReadKey();
+			Console.WriteLine($"Found {todos.Count} files to process.\nPress key to start.");
+			_ = Console.ReadKey();
 
-		IList<string> todosDone = GetThigsDone(param.CompressionLevel, todos, param.SeparateMaps);
+			IList<string> todosDone = GetThigsDone(param.CompressionLevel, todos, param.SeparateMaps);
 
-		Console.Write($"\n" +
-			$"Conversion completed.\n" +
-			$"Number of files to convert: {todos.Count}\n" +
-			$"Number of files converted: {todosDone.Count}\n" +
-			$"Press key to exit.");
+			Console.Write($"\n" +
+				$"Conversion completed.\n" +
+				$"Number of files to convert: {todos.Count}\n" +
+				$"Number of files converted: {todosDone.Count}\n" +
+				$"Press key to exit.");
 
-		_ = Console.ReadKey();
+			_ = Console.ReadKey();
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine(ex.Message);
+			Environment.Exit(1);
+		}
 	}
 
 	private static Parameter GetParameter(string[] args)

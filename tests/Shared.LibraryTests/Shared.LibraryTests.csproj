@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
@@ -20,11 +20,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="TestResources\outfit101m.dds">
+		<None Update="SourceResources\outfit101m.dds">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Update="TestResources\outfit101m.png">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<None Update="SourceResources\outfit101m.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 

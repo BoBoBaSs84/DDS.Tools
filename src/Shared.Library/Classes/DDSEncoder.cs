@@ -16,12 +16,11 @@ internal sealed class DDSEncoder : BcEncoder
 	/// </summary>
 	/// <param name="generateMipMaps"></param>
 	/// <param name="compressionQuality"></param>
-	/// <param name="compressionFormat"></param>
-	public DDSEncoder(bool generateMipMaps = true, CompressionQuality compressionQuality = CompressionQuality.BestQuality, CompressionFormat compressionFormat = CompressionFormat.Bc3)
+	public DDSEncoder(bool generateMipMaps = true, CompressionQuality compressionQuality = CompressionQuality.Balanced)
 	{
 		OutputOptions.GenerateMipMaps = generateMipMaps;
 		OutputOptions.Quality = compressionQuality;
-		OutputOptions.Format = compressionFormat;
+		OutputOptions.Format = CompressionFormat.Bc3;
 		OutputOptions.FileFormat = OutputFileFormat.Dds;
 	}
 }
