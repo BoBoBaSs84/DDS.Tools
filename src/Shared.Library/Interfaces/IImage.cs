@@ -6,9 +6,39 @@
 public interface IImage
 {
 	/// <summary>
+	/// The file name of the image.
+	/// </summary>
+	string FileName { get; }
+
+	/// <summary>
+	/// The file path of the image.
+	/// </summary>
+	string FilePath { get; }
+
+	/// <summary>
+	/// Does the image have an alpha channel?
+	/// </summary>
+	bool HasAlphaChannel { get; }
+
+	/// <summary>
+	/// The heigth of the image.
+	/// </summary>
+	int Heigth { get; }
+
+	/// <summary>
 	/// The image binary data.
 	/// </summary>
 	byte[] ImageData { get; }
+
+	/// <summary>
+	/// The MD5 hash of the image.
+	/// </summary>
+	string Md5Hash { get; }
+
+	/// <summary>
+	/// The width of the image.
+	/// </summary>
+	int Width { get; }
 
 	/// <summary>
 	/// Should save the image using default encoder.

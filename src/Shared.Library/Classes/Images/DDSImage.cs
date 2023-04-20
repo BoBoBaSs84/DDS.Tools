@@ -10,11 +10,16 @@ namespace Shared.Library.Classes.Images;
 /// </summary>
 internal sealed class DDSImage : IImage
 {
-	private readonly DDSDecoder _decoder;
+	private readonly DDSDecoder _decoder = new();
 	private readonly Image<Rgba32> _image;
-
-	/// <inheritdoc/>
+	
+	public string FileName { get; }
+	public string FilePath { get; }
+	public bool HasAlphaChannel { get; }
+	public int Heigth { get; }
 	public byte[] ImageData { get; }
+	public string Md5Hash { get; }
+	public int Width { get; }
 
 	/// <summary>
 	/// Initializes an instance of <see cref="DDSImage"/> class.
@@ -22,11 +27,19 @@ internal sealed class DDSImage : IImage
 	/// <param name="filePath">The path to the image file.</param>
 	public DDSImage(string filePath)
 	{
-		_decoder = new DDSDecoder();
+		FileInfo fileInfo = new(filePath);
+		FileName = fileInfo.Name;
+		FilePath = fileInfo.FullName;
+		
 		using FileStream fileStream = File.OpenRead(filePath);
 		_image = _decoder.DecodeToImageRgba32(fileStream);
+		Width = _image.Width;
+		Heigth = _image.Height;
+		HasAlphaChannel = _image.PixelType.AlphaRepresentation.HasValue;
+		
 		fileStream.Position = 0;
 		ImageData = Helper.StreamToByteArray(fileStream);
+		Md5Hash = Helper.GetMD5String(ImageData);
 	}
 
 	/// <inheritdoc/>

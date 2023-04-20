@@ -10,8 +10,16 @@ namespace Shared.Library.Classes.Images;
 /// </summary>
 internal sealed class PNGImage : IImage
 {
-	private readonly DDSEncoder _encoder;
+	private readonly DDSEncoder _encoder = new();
 	private readonly Image<Rgba32> _image;
+
+	public string FileName { get; }
+	public string FilePath { get; }
+	public bool HasAlphaChannel { get; }
+	public int Heigth { get; }
+	public byte[] ImageData { get; }
+	public string Md5Hash { get; }
+	public int Width { get; }
 
 	/// <summary>
 	/// Initializes an instance of <see cref="PNGImage"/> class.
@@ -19,15 +27,20 @@ internal sealed class PNGImage : IImage
 	/// <param name="filePath">The path to the image file.</param>
 	public PNGImage(string filePath)
 	{
-		_encoder = new DDSEncoder();
+		FileInfo fileInfo = new(filePath);
+		FileName = fileInfo.Name;
+		FilePath = fileInfo.FullName;
+
 		using FileStream fileStream = File.OpenRead(filePath);
 		_image = Image.Load<Rgba32>(fileStream);
+		Width = _image.Width;
+		Heigth = _image.Height;
+		HasAlphaChannel = _image.PixelType.AlphaRepresentation.HasValue;
+
 		fileStream.Position = 0;
 		ImageData = Helper.StreamToByteArray(fileStream);
+		Md5Hash = Helper.GetMD5String(ImageData);
 	}
-
-	/// <inheritdoc/>
-	public byte[] ImageData { get; }
 
 	/// <inheritdoc/>
 	public void Save(string filePath)

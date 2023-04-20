@@ -1,11 +1,13 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shared.Library.Factories;
 using Shared.Library.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 using TC = Shared.LibraryTests.TestConstants;
 
 namespace Shared.LibraryTests.Classes.Images;
 
 [TestClass]
+[SuppressMessage("Style", "IDE0058", Justification = "UnitTest")]
 public class PNGImageTests
 {
 	public PNGImageTests()
@@ -25,8 +27,13 @@ public class PNGImageTests
 		image.Save(targetFolder);
 		FileInfo fileInfo = new(targetFolder);
 
-		Assert.IsTrue(image.ImageData.Length > 0);
 		Assert.IsTrue(fileInfo.Exists);
+		Assert.IsTrue(image.FileName != string.Empty);
+		Assert.IsTrue(image.FilePath != string.Empty);
+		Assert.IsTrue(image.Heigth != 0);
+		Assert.IsTrue(image.ImageData.Length > 0);
+		Assert.IsTrue(image.Md5Hash != string.Empty);
+		Assert.IsTrue(image.Width != 0);
 	}
 
 	[TestMethod]
@@ -54,7 +61,12 @@ public class PNGImageTests
 		image.Save(targetFolder, compressionLevel);
 		FileInfo fileInfo = new(targetFolder);
 
-		Assert.IsTrue(image.ImageData.Length > 0);
 		Assert.IsTrue(fileInfo.Exists);
+		Assert.IsTrue(image.FileName != string.Empty);
+		Assert.IsTrue(image.FilePath != string.Empty);
+		Assert.IsTrue(image.Heigth != 0);
+		Assert.IsTrue(image.ImageData.Length > 0);
+		Assert.IsTrue(image.Md5Hash != string.Empty);
+		Assert.IsTrue(image.Width != 0);
 	}
 }
