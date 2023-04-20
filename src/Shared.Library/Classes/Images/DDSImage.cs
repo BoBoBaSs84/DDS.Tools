@@ -7,7 +7,7 @@ namespace Shared.Library.Classes.Images;
 /// <summary>
 /// The dds image class.
 /// </summary>
-public sealed class DDSImage : IImage
+internal sealed class DDSImage : IImage
 {
 	private readonly DDSDecoder _decoder;
 	private readonly Image<Rgba32> _image;

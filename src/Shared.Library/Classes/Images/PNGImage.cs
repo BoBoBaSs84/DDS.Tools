@@ -6,7 +6,7 @@ namespace Shared.Library.Classes.Images;
 /// <summary>
 /// The png image class.
 /// </summary>
-public sealed class PNGImage : IImage
+internal sealed class PNGImage : IImage
 {
 	private readonly DDSEncoder _encoder;
 	private readonly Image<Rgba32> _image;

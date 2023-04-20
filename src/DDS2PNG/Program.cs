@@ -1,7 +1,8 @@
 ﻿using DDS2PNG.Classes;
 using DDS2PNG.Properties;
 using Shared.Library.Classes;
-using Shared.Library.Classes.Images;
+using Shared.Library.Factories;
+using Shared.Library.Interfaces;
 
 namespace DDS2PNG;
 
@@ -64,7 +65,7 @@ internal sealed class Program
 		foreach (string file in allFiles)
 		{
 			FileInfo fileInfo = new(file);
-			DDSImage image = new(file);
+			IImage image = ImageFactory.CreateDdsImage(file);
 
 			string md5String = Helper.GetMD5String(image.ImageData);
 			string relativePath = $"{fileInfo.Directory!.Parent!.Name}{fileInfo.DirectoryName!.Replace(sourcePath, string.Empty)}";
@@ -126,8 +127,8 @@ internal sealed class Program
 
 	private static void SaveImage(Todo todo, string targetFolder, int level)
 	{
-		DDSImage image = new(todo.FullPathName);
-		image.Save(targetFolder, level);
+		IImage image = ImageFactory.CreateDdsImage(todo.FullPathName);
+		image.Save(targetFolder);
 		todosDone.Add(todo.MD5String);
 		Console.WriteLine($"[{DateTime.Now}]\t{Path.Combine(todo.RelativePath, todo.FileName)} -> {targetFolder}");
 	}
