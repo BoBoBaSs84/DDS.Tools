@@ -73,7 +73,7 @@ internal sealed class Program
 
 		DirectoryInfo directoryInfo = new(sourcePath);
 
-		int totalTodoCount = allFiles.Length;
+		int totalTodoCount = todos.Count;
 
 		foreach (string file in allFiles)
 		{
@@ -95,7 +95,7 @@ internal sealed class Program
 
 				string progress = (Convert.ToSingle(todosDone.Count) * 100 / totalTodoCount).ToString("#.##", CultureInfo.InvariantCulture);
 
-				Console.WriteLine($"[{DateTime.Now}]\t[{progress}%]\t{file} -> {targetFullName}");
+				Console.WriteLine($"{progress}%\t{file} -> {targetFullName}");
 			}
 		}
 
