@@ -4,8 +4,6 @@
 		<Platforms>x64</Platforms>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
-		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>PublicKey.snk</AssemblyOriginatorKeyFile>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	</PropertyGroup>
