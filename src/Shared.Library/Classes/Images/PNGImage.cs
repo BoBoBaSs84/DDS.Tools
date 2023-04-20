@@ -1,4 +1,6 @@
-﻿using BCnEncoder.ImageSharp;
+﻿using BCnEncoder.Encoder;
+using BCnEncoder.ImageSharp;
+using Shared.Library.Extensions;
 using Shared.Library.Interfaces;
 
 namespace Shared.Library.Classes.Images;
@@ -30,6 +32,25 @@ internal sealed class PNGImage : IImage
 	/// <inheritdoc/>
 	public void Save(string filePath)
 	{
+		using FileStream fileStream = File.OpenWrite(filePath);
+		_encoder.EncodeToStream(_image, fileStream);
+	}
+
+	/// <inheritdoc/>
+	public void Save(string filePath, int compressionLevel)
+	{
+		if (!Enum.IsDefined(typeof(CompressionQuality), compressionLevel))
+		{
+			string errorMessage = "Possible compression level values are:\n";
+
+			foreach (CompressionQuality quality in CompressionQuality.Fast.GetListFromEnum().Distinct())
+				errorMessage += $"\t{(int)quality} - {quality}\n";
+
+			throw new ArgumentOutOfRangeException(nameof(compressionLevel), errorMessage);
+		}
+
+		_encoder.OutputOptions.Quality = (CompressionQuality)compressionLevel;
+
 		using FileStream fileStream = File.OpenWrite(filePath);
 		_encoder.EncodeToStream(_image, fileStream);
 	}

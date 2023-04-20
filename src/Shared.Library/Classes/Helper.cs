@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace Shared.Library.Classes;
@@ -6,6 +7,7 @@ namespace Shared.Library.Classes;
 /// <summary>
 /// The helper class.
 /// </summary>
+[SuppressMessage("Security", "CA5351", Justification = "Not used for encryption.")]
 public static class Helper
 {
 	/// <summary>
@@ -29,10 +31,14 @@ public static class Helper
 	public static string JsonResult(IList<Todo> todos)
 			=> JsonSerializer.Serialize(todos);
 
+	/// <summary>
+	/// Should return a byte array.
+	/// </summary>
+	/// <param name="stream"></param>
 	public static byte[] StreamToByteArray(Stream stream)
 		=> stream is MemoryStream memoryStream ? memoryStream.ToArray() : ReadFully(stream);
 
-	public static byte[] ReadFully(Stream input)
+	private static byte[] ReadFully(Stream input)
 	{
 		using MemoryStream ms = new();
 		input.CopyTo(ms);

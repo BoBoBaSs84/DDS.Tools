@@ -9,7 +9,7 @@ namespace Shared.Library.Classes;
 /// <remarks>
 /// Derives from the <see cref="BcEncoder"/> class.
 /// </remarks>
-public sealed class DDSEncoder : BcEncoder
+internal sealed class DDSEncoder : BcEncoder
 {
 	/// <summary>
 	/// Initializes an instance of <see cref="DDSEncoder"/> class.

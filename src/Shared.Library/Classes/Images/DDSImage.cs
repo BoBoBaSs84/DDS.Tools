@@ -1,4 +1,5 @@
 ﻿using BCnEncoder.ImageSharp;
+using Shared.Library.Extensions;
 using Shared.Library.Interfaces;
 using SixLabors.ImageSharp.Formats.Png;
 
@@ -36,12 +37,21 @@ internal sealed class DDSImage : IImage
 		_image.SaveAsPng(fileStream, pngEncoder);
 	}
 
-	/// <summary>
-	/// Should save the image using default encoder.
-	/// </summary>
-	/// <param name="filePath">The path to the image file.</param>
-	/// <param name="level">The compression level for the image.</param>
-	[Obsolete("I'm going to remove this method.")]
-	public void Save(string filePath, int level = 0)
-		=> Save(filePath);
+	/// <inheritdoc/>
+	public void Save(string filePath, int compressionLevel)
+	{
+		if (!Enum.IsDefined(typeof(PngCompressionLevel), compressionLevel))
+		{
+			string errorMessage = "Possible compression level values are:\n";
+
+			foreach (PngCompressionLevel level in PngCompressionLevel.DefaultCompression.GetListFromEnum().Distinct())
+				errorMessage += $"\t{(int)level} - {level}\n";
+
+			throw new ArgumentOutOfRangeException(nameof(compressionLevel), errorMessage);
+		}
+
+		using FileStream fileStream = File.OpenWrite(filePath);
+		PngEncoder pngEncoder = new() { CompressionLevel = (PngCompressionLevel)compressionLevel };
+		_image.SaveAsPng(fileStream, pngEncoder);
+	}
 }

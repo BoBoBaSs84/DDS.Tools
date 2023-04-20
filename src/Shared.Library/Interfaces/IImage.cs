@@ -15,4 +15,11 @@ public interface IImage
 	/// </summary>
 	/// <param name="filePath">The path to the image file.</param>
 	void Save(string filePath);
+
+	/// <summary>
+	/// Should save the image using default encoder.
+	/// </summary>
+	/// <param name="filePath">The path to the image file.</param>
+	/// <param name="compressionLevel">The compression level for the image.</param>
+	void Save(string filePath, int compressionLevel);
 }
