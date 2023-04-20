@@ -1,6 +1,7 @@
 ﻿using DDS2PNG.Classes;
 using DDS2PNG.Properties;
 using Shared.Library.Classes;
+using Shared.Library.Classes.Images;
 
 namespace DDS2PNG;
 

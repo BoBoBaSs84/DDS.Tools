@@ -28,4 +28,14 @@ public static class Helper
 	/// <param name="todos"></param>
 	public static string JsonResult(IList<Todo> todos)
 			=> JsonSerializer.Serialize(todos);
+
+	public static byte[] StreamToByteArray(Stream stream)
+		=> stream is MemoryStream memoryStream ? memoryStream.ToArray() : ReadFully(stream);
+
+	public static byte[] ReadFully(Stream input)
+	{
+		using MemoryStream ms = new();
+		input.CopyTo(ms);
+		return ms.ToArray();
+	}
 }
