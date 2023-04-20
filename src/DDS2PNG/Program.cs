@@ -75,10 +75,9 @@ internal sealed class Program
 			FileInfo fileInfo = new(file);
 			IImage image = ImageFactory.CreateDdsImage(file);
 
-			string md5String = Helper.GetMD5String(image.ImageData);
-			string relativePath = $"{file.Replace(directoryInfo.Parent!.FullName, string.Empty)}";
+			string relativePath = $"{fileInfo.DirectoryName!.Replace(directoryInfo.Parent!.FullName, string.Empty)}";
 
-			Todo todo = new(fileInfo.Name, relativePath, file, targetPath, md5String);
+			Todo todo = new(image.FileName, relativePath, file, targetPath, image.Md5Hash);
 			todos.Add(todo);
 		}
 

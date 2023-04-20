@@ -2,7 +2,7 @@
   "profiles": {
     "PNG2DDS": {
       "commandName": "Project",
-      "commandLineArgs": "D:\\Test\\Data\\Result"
+      "commandLineArgs": "D:\\Test\\Result"
     }
   }
 }

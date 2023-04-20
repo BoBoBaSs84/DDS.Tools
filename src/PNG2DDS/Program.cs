@@ -24,7 +24,7 @@ internal sealed class Program
 
 			Console.Write($"\n" +
 				$"Conversion completed.\n" +
-				$"Number of files to convert: {todos.Count}\n" +
+				$"Number of files to convert left: {todos.Count}\n" +
 				$"Number of files converted: {todosDone.Count}\n" +
 				$"Press key to exit.");
 
@@ -73,23 +73,30 @@ internal sealed class Program
 
 		DirectoryInfo directoryInfo = new(sourcePath);
 
+		int totalTodoCount = allFiles.Length;
+
 		foreach (string file in allFiles)
 		{
 			FileInfo fileInfo = new(file);
 			IImage image = ImageFactory.CreatePngImage(file);
 
-			Todo todo = todos.Where(x => x.MD5String.Equals(fileInfo.Name.Replace(fileInfo.Extension, string.Empty), StringComparison.OrdinalIgnoreCase)).First();
+			// we can have multiple file results for one hash result!
+			IList<Todo> todoList = todos.Where(x => x.MD5String.Equals(fileInfo.Name.Replace(fileInfo.Extension, string.Empty), StringComparison.OrdinalIgnoreCase)).ToList();
+			foreach (Todo todo in todoList)
+			{
+				string targetFolder = $"{directoryInfo.FullName}{todo.RelativePath}";
+				_ = Directory.CreateDirectory(targetFolder);
 
-			string targetFolder = $"{directoryInfo.FullName}{todo.RelativePath.Replace(todo.FileName, string.Empty)}";
-			_ = Directory.CreateDirectory(targetFolder);
+				string targetFullName = Path.Combine($"{directoryInfo.FullName}{todo.RelativePath}", todo.FileName);
+				image.Save(targetFullName, compressionLevel);
 
-			string targetFullName = $"{directoryInfo.FullName}{todo.RelativePath}";
-			image.Save(targetFullName, compressionLevel);
+				_ = todos.Remove(todo);
+				todosDone.Add(file);
 
-			Console.WriteLine($"[{DateTime.Now}]\t{file} -> {targetFullName}");
+				string progress = (Convert.ToSingle(todosDone.Count) * 100 / totalTodoCount).ToString("#.##", CultureInfo.InvariantCulture);
 
-			todos.Remove(todo);
-			todosDone.Add(file);
+				Console.WriteLine($"[{DateTime.Now}]\t[{progress}%]\t{file} -> {targetFullName}");
+			}
 		}
 
 		return;
