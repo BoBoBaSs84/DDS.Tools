@@ -58,6 +58,8 @@ internal sealed class DDSImage : IImage
 			foreach (PngCompressionLevel level in PngCompressionLevel.DefaultCompression.GetListFromEnum().Distinct())
 				errorMessage += $"\t{(int)level} - {level}\n";
 
+			errorMessage += $"Current value: '{compressionLevel}'";
+
 			throw new ArgumentOutOfRangeException(nameof(compressionLevel), errorMessage);
 		}
 

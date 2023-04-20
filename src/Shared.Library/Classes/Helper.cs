@@ -28,8 +28,11 @@ public static class Helper
 	/// Should return a json result.
 	/// </summary>
 	/// <param name="todos"></param>
-	public static string JsonResult(IList<Todo> todos)
+	public static string GetJsonResultFromList(IList<Todo> todos)
 			=> JsonSerializer.Serialize(todos);
+
+	public static IList<Todo>? GetListFromJsonResult(string jsonResult)
+		=> JsonSerializer.Deserialize<List<Todo>>(jsonResult);
 
 	/// <summary>
 	/// Should return a byte array.

@@ -76,7 +76,7 @@ internal sealed class Program
 			IImage image = ImageFactory.CreateDdsImage(file);
 
 			string md5String = Helper.GetMD5String(image.ImageData);
-			string relativePath = $"{fileInfo.Directory!.Parent!.Name}{fileInfo.DirectoryName!.Replace(sourcePath, string.Empty)}";
+			string relativePath = $"{file.Replace(directoryInfo.Parent!.FullName, string.Empty)}";
 
 			Todo todo = new(fileInfo.Name, relativePath, file, targetPath, md5String);
 			todos.Add(todo);
@@ -119,14 +119,14 @@ internal sealed class Program
 			if (todosDone.Contains(todo.MD5String))
 				continue;
 
-			string targetPath = Path.Combine(todo.TargetPath, "textures");
+			string targetPath = Path.Combine(todo.TargetPath, "textureMaps");  
 			_ = Directory.CreateDirectory(targetPath);
 			string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
 
 			SaveImage(todo, newFilePath, level);
 		}
 
-		string result = Helper.JsonResult(todos);
+		string result = Helper.GetJsonResultFromList(todos);
 		string resultPath = Path.Combine(todos.First().TargetPath, Constants.Result.FileName);
 		File.WriteAllText(resultPath, result);
 
@@ -136,7 +136,7 @@ internal sealed class Program
 	private static void SaveImage(Todo todo, string targetFolder, int level)
 	{
 		IImage image = ImageFactory.CreateDdsImage(todo.FullPathName);
-		image.Save(targetFolder);
+		image.Save(targetFolder, level);
 		todosDone.Add(todo.MD5String);
 		Console.WriteLine($"[{DateTime.Now}]\t{Path.Combine(todo.RelativePath, todo.FileName)} -> {targetFolder}");
 	}
