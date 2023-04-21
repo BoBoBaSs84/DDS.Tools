@@ -11,6 +11,7 @@ internal sealed class Program
 	private static readonly IList<string> TodosDone = new List<string>();
 	private static readonly IList<Todo> Todos = new List<Todo>();
 	private static int TotalTodoCount;
+	private static int TotalTodoDuplicateCount;
 
 	private static void Main(string[] args)
 	{
@@ -27,8 +28,9 @@ internal sealed class Program
 
 			Console.Write($"\n" +
 				$"Conversion completed.\n" +
-				$"Number of files not converted: {Todos.Count}\n" +
+				$"Number of files to convert: {Todos.Count}\n" +
 				$"Number of files converted: {TodosDone.Count}\n" +
+				$"Number of duplicates: {TotalTodoDuplicateCount}\n" +
 				$"Press key to exit.");
 
 			_ = Console.ReadKey();
@@ -107,7 +109,10 @@ internal sealed class Program
 			foreach (Todo todo in Todos.Where(x => x.FileName.EndsWith($"_n.{Constants.Extension.DDS}", StringComparison.CurrentCultureIgnoreCase)))
 			{
 				if (TodosDone.Contains(todo.MD5String))
+				{
+					TotalTodoDuplicateCount++;
 					continue;
+				}
 
 				string targetFolder = Path.Combine(todo.TargetPath, "normalMaps");
 				SaveImage(parameter, todo, targetFolder);
@@ -120,7 +125,7 @@ internal sealed class Program
 				continue;
 
 			string targetFolder = Path.Combine(todo.TargetPath, "textureMaps");
-			SaveImage(parameter, todo, targetFolder);
+			SaveImage(parameter, todo, targetFolder);			
 		}
 
 		string result = Helper.GetJsonResultFromList(Todos);
@@ -143,7 +148,7 @@ internal sealed class Program
 
 		TodosDone.Add(todo.MD5String);
 
-		string progress = (Convert.ToSingle(TodosDone.Count) * 100 / TotalTodoCount).ToString("#.##", CultureInfo.InvariantCulture);
+		string progress = (Convert.ToSingle(TodosDone.Count + TotalTodoDuplicateCount) * 100 / TotalTodoCount).ToString("#.##", CultureInfo.InvariantCulture);
 		Console.WriteLine($"{progress}%\t{Path.Combine(todo.RelativePath, todo.FileName)} -> {filePath}");
 	}
 

@@ -1,8 +1,12 @@
 {
   "profiles": {
-    "DDS2PNG": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "DDS2PNG.DEV": {
       "commandName": "Project",
-      "commandLineArgs": "\"D:\\Modding\\FO3\\Data\\textures\\armor\" \"*.dds\""
+      "commandLineArgs": "\"D:\\Modding\\FO3\\Data\\textures\\creatures\" \"*.dds\""
     }
   }
 }
