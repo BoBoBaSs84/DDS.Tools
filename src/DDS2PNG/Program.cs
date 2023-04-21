@@ -8,25 +8,26 @@ namespace DDS2PNG;
 
 internal sealed class Program
 {
-	private static readonly IList<string> todosDone = new List<string>();
+	private static readonly IList<string> TodosDone = new List<string>();
+	private static readonly IList<Todo> Todos = new List<Todo>();	
 
 	private static void Main(string[] args)
 	{
 		try
 		{
-			Parameter param = GetParameter(args);
+			Parameter parameter = GetParameter(args);
 
-			IList<Todo> todos = GetTodos(param.SourceFolder);
+			GetTodos(parameter);
 
-			Console.WriteLine($"Found {todos.Count} files to process.\nPress key to start.");
+			Console.WriteLine($"Found {Todos.Count} files to process.\nPress key to start.");
 			_ = Console.ReadKey();
 
-			IList<string> todosDone = GetThigsDone(param.CompressionLevel, todos, param.SeparateMaps);
+			GetThigsDone(parameter);
 
 			Console.Write($"\n" +
 				$"Conversion completed.\n" +
-				$"Number of files to convert: {todos.Count}\n" +
-				$"Number of files converted: {todosDone.Count}\n" +
+				$"Number of files to convert: {Todos.Count}\n" +
+				$"Number of files converted: {TodosDone.Count}\n" +
 				$"Press key to exit.");
 
 			_ = Console.ReadKey();
@@ -40,9 +41,10 @@ internal sealed class Program
 
 	private static Parameter GetParameter(string[] args)
 	{
-		if (args.Length < 1)
+		if (args.Length < 2)
 		{
-			Console.WriteLine($"Please provide the texture source path ie.: 'D:\\Data\\Textures'");
+			Console.WriteLine($"Please provide the texture source path ie.: 'D:\\Data\\Textures'\n" +
+				$"Please provide a search pattern for the files ie.: '*?n.dds'\n");
 			Environment.Exit(1);
 		}
 
@@ -53,90 +55,101 @@ internal sealed class Program
 			Environment.Exit(1);
 		}
 
-		int level = Settings.Default.CompressionLevel;
-		bool maps = Settings.Default.SeparateMaps;
+		int compressionLevel = Settings.Default.CompressionLevel;
+		bool separateMaps = Settings.Default.SeparateMaps;
+		bool ignoreMaps = Settings.Default.IgnoreMaps;
+		bool separateBySize = Settings.Default.SeparateBySize;
 
-		return new(args[0], level, maps);
+		return new(args[0], args[1], compressionLevel, separateMaps, ignoreMaps, separateBySize);
 	}
 
-	private static IList<Todo> GetTodos(string sourcePath)
+	private static void GetTodos(Parameter parameter)
 	{
-		IList<Todo> todos = new List<Todo>();
-		string[] allFiles = Directory.GetFiles(sourcePath, $"*.{Constants.Extension.DDS}", SearchOption.AllDirectories);
+		string[] allFiles = Directory.GetFiles(parameter.SourceFolder, parameter.SearchPattern, SearchOption.AllDirectories);
 
 		if (!allFiles.Any())
-			return todos;
+			return;
 
-		DirectoryInfo directoryInfo = new(sourcePath);
+		DirectoryInfo directoryInfo = new(parameter.SourceFolder);
 		string targetPath = Path.Combine(directoryInfo.Parent!.FullName, Constants.Result.Folder);
 
 		foreach (string file in allFiles)
 		{
-			FileInfo fileInfo = new(file);
-			IImage image = ImageFactory.CreateDdsImage(file);
-
-			string relativePath = $"{fileInfo.DirectoryName!.Replace(directoryInfo.Parent!.FullName, string.Empty)}";
-
-			Todo todo = new(image.FileName, relativePath, file, targetPath, image.Md5Hash);
-			todos.Add(todo);
-		}
-
-		return todos;
-	}
-
-	private static IList<string> GetThigsDone(int level, IList<Todo> todos, bool separateMaps = false)
-	{
-		if (separateMaps)
-		{
-			foreach (Todo todo in todos.Where(x => x.FileName.EndsWith($"_n.{Constants.Extension.DDS}", StringComparison.CurrentCultureIgnoreCase)))
-			{
-				if (todosDone.Contains(todo.MD5String))
-					continue;
-
-				string targetPath = Path.Combine(todo.TargetPath, "normalMaps");
-				_ = Directory.CreateDirectory(targetPath);
-				string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
-
-				SaveImage(todo, newFilePath, level);
-			}
-
-			foreach (Todo todo in todos.Where(x => x.FileName.EndsWith($"_d.{Constants.Extension.DDS}", StringComparison.CurrentCultureIgnoreCase)))
-			{
-				if (todosDone.Contains(todo.MD5String))
-					continue;
-
-				string targetPath = Path.Combine(todo.TargetPath, "diffuseMaps");
-				_ = Directory.CreateDirectory(targetPath);
-				string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
-
-				SaveImage(todo, newFilePath, level);
-			}
-		}
-
-		foreach (Todo todo in todos)
-		{
-			if (todosDone.Contains(todo.MD5String))
+			if (IgnoreFile(parameter, file))
 				continue;
 
-			string targetPath = Path.Combine(todo.TargetPath, "textureMaps");  
-			_ = Directory.CreateDirectory(targetPath);
-			string newFilePath = Path.Combine(targetPath, $"{todo.MD5String}.{Constants.Extension.PNG}");
+			try
+			{
+				FileInfo fileInfo = new(file);
+				IImage image = ImageFactory.CreateDdsImage(file);
 
-			SaveImage(todo, newFilePath, level);
+				string relativePath = $"{fileInfo.DirectoryName!.Replace(directoryInfo.Parent!.FullName, string.Empty)}";
+
+				Todo todo = new(image.FileName, relativePath, file, targetPath, image.Md5Hash);
+				Todos.Add(todo);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error: {file} -> {ex.Message}");
+			}
 		}
 
-		string result = Helper.GetJsonResultFromList(todos);
-		string resultPath = Path.Combine(todos.First().TargetPath, Constants.Result.FileName);
-		File.WriteAllText(resultPath, result);
-
-		return todosDone;
+		return;
 	}
 
-	private static void SaveImage(Todo todo, string targetFolder, int level)
+	private static void GetThigsDone(Parameter parameter)
+	{
+		if (parameter.SeparateMaps)
+		{
+			foreach (Todo todo in Todos.Where(x => x.FileName.EndsWith($"_n.{Constants.Extension.DDS}", StringComparison.CurrentCultureIgnoreCase)))
+			{
+				if (TodosDone.Contains(todo.MD5String))
+					continue;
+
+				string targetFolder = Path.Combine(todo.TargetPath, "normalMaps");
+				_ = Directory.CreateDirectory(targetFolder);
+
+				SaveImage(parameter, todo, targetFolder);
+			}
+		}
+
+		foreach (Todo todo in Todos)
+		{
+			if (TodosDone.Contains(todo.MD5String))
+				continue;
+
+			string targetFolder = Path.Combine(todo.TargetPath, "textureMaps");  
+			_ = Directory.CreateDirectory(targetFolder);
+
+			SaveImage(parameter, todo, targetFolder);
+		}
+
+		string result = Helper.GetJsonResultFromList(Todos);
+		string resultPath = Path.Combine(Todos.First().TargetPath, Constants.Result.FileName);
+		File.WriteAllText(resultPath, result);
+
+		return;
+	}
+
+	private static void SaveImage(Parameter parameter, Todo todo, string targetFolder)
 	{
 		IImage image = ImageFactory.CreateDdsImage(todo.FullPathName);
-		image.Save(targetFolder, level);
-		todosDone.Add(todo.MD5String);
+		
+		if (parameter.SeparateBySize)
+			targetFolder = Path.Combine(targetFolder, $"{image.Width}");
+		
+		string filePath = Path.Combine(targetFolder, $"{todo.MD5String}.{Constants.Extension.PNG}");		
+		image.Save(filePath, parameter.CompressionLevel);
+		
+		TodosDone.Add(todo.MD5String);
 		Console.WriteLine($"[{DateTime.Now}]\t{Path.Combine(todo.RelativePath, todo.FileName)} -> {targetFolder}");
+	}
+
+	private static bool IgnoreFile(Parameter parameter, string filePath)
+	{
+		if (parameter.IgnoreMaps)
+			if (filePath.EndsWith("_n.dds", StringComparison.InvariantCultureIgnoreCase))
+				return true;
+		return false;
 	}
 }
