@@ -9,7 +9,8 @@ namespace DDS2PNG;
 internal sealed class Program
 {
 	private static readonly IList<string> TodosDone = new List<string>();
-	private static readonly IList<Todo> Todos = new List<Todo>();	
+	private static readonly IList<Todo> Todos = new List<Todo>();
+	private static int TotalTodoCount;
 
 	private static void Main(string[] args)
 	{
@@ -26,7 +27,7 @@ internal sealed class Program
 
 			Console.Write($"\n" +
 				$"Conversion completed.\n" +
-				$"Number of files to convert: {Todos.Count}\n" +
+				$"Number of files not converted: {Todos.Count}\n" +
 				$"Number of files converted: {TodosDone.Count}\n" +
 				$"Press key to exit.");
 
@@ -94,6 +95,8 @@ internal sealed class Program
 			}
 		}
 
+		TotalTodoCount = Todos.Count;
+		
 		return;
 	}
 
@@ -107,8 +110,6 @@ internal sealed class Program
 					continue;
 
 				string targetFolder = Path.Combine(todo.TargetPath, "normalMaps");
-				_ = Directory.CreateDirectory(targetFolder);
-
 				SaveImage(parameter, todo, targetFolder);
 			}
 		}
@@ -118,9 +119,7 @@ internal sealed class Program
 			if (TodosDone.Contains(todo.MD5String))
 				continue;
 
-			string targetFolder = Path.Combine(todo.TargetPath, "textureMaps");  
-			_ = Directory.CreateDirectory(targetFolder);
-
+			string targetFolder = Path.Combine(todo.TargetPath, "textureMaps");
 			SaveImage(parameter, todo, targetFolder);
 		}
 
@@ -134,15 +133,18 @@ internal sealed class Program
 	private static void SaveImage(Parameter parameter, Todo todo, string targetFolder)
 	{
 		IImage image = ImageFactory.CreateDdsImage(todo.FullPathName);
-		
+
 		if (parameter.SeparateBySize)
 			targetFolder = Path.Combine(targetFolder, $"{image.Width}");
-		
-		string filePath = Path.Combine(targetFolder, $"{todo.MD5String}.{Constants.Extension.PNG}");		
+		_ = Directory.CreateDirectory(targetFolder);
+
+		string filePath = Path.Combine(targetFolder, $"{todo.MD5String}.{Constants.Extension.PNG}");
 		image.Save(filePath, parameter.CompressionLevel);
-		
+
 		TodosDone.Add(todo.MD5String);
-		Console.WriteLine($"[{DateTime.Now}]\t{Path.Combine(todo.RelativePath, todo.FileName)} -> {targetFolder}");
+
+		string progress = (Convert.ToSingle(TodosDone.Count) * 100 / TotalTodoCount).ToString("#.##", CultureInfo.InvariantCulture);
+		Console.WriteLine($"{progress}%\t{Path.Combine(todo.RelativePath, todo.FileName)} -> {filePath}");
 	}
 
 	private static bool IgnoreFile(Parameter parameter, string filePath)

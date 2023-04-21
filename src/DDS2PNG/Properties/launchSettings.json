@@ -2,7 +2,7 @@
   "profiles": {
     "DDS2PNG": {
       "commandName": "Project",
-      "commandLineArgs": "\"D:\\Test\\textures\" \"*.dds\""
+      "commandLineArgs": "\"D:\\Modding\\FO3\\Data\\textures\\armor\" \"*.dds\""
     }
   }
 }
