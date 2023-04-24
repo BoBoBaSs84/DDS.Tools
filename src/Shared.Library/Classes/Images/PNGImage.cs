@@ -61,8 +61,10 @@ internal sealed class PNGImage : IImage
 		}
 
 		_encoder.OutputOptions.Quality = (CompressionQuality)compressionLevel;
+		_encoder.OutputOptions.DdsPreferDxt10Header = true;
+		_encoder.OutputOptions.MaxMipMapLevel = -1;
+		_encoder.OutputOptions.Format = BCnEncoder.Shared.CompressionFormat.Bc3;
 
-		using FileStream fileStream = File.OpenWrite(filePath);
-		_encoder.EncodeToStream(_image, fileStream);
+		Save(filePath);
 	}
 }

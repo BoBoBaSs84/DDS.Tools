@@ -1,7 +1,6 @@
 ﻿using DDS2PNG.Classes;
+using PNG2DDS.Properties;
 using Shared.Library.Classes;
-using Shared.Library.Factories;
-using Shared.Library.Interfaces;
 
 namespace PNG2DDS;
 
@@ -9,18 +8,18 @@ internal sealed class Program
 {
 	private static readonly IList<string> todosDone = new List<string>();
 
-	static void Main(string[] args)
+	private static void Main(string[] args)
 	{
 		try
 		{
 			Parameter param = GetParameter(args);
 
-			IList<Todo> todos = GetTodos(param.SourceFolder);
-			
+			IList<Todo> todos = GetReverseTodos(param.SourceFolder);
+
 			Console.WriteLine($"Found {todos.Count} files to process.\nPress key to start.");
 			_ = Console.ReadKey();
 
-			GetThigsDone(param.SourceFolder, todos, param.CompressionLevel);
+			GetReverseThigsDone(param.SourceFolder, todos);
 
 			Console.Write($"\n" +
 				$"Conversion completed.\n" +
@@ -56,7 +55,7 @@ internal sealed class Program
 		return new(args[0], level);
 	}
 
-	private static IList<Todo> GetTodos(string sourcePath)
+	private static IList<Todo> GetReverseTodos(string sourcePath)
 	{
 		string jsonResultContent = File.ReadAllText(Path.Combine(sourcePath, Constants.Result.FileName));
 		IList<Todo>? todos = Helper.GetListFromJsonResult(jsonResultContent);
@@ -64,10 +63,10 @@ internal sealed class Program
 		return todos;
 	}
 
-	private static void GetThigsDone(string sourcePath, IList<Todo> todos, int compressionLevel)
+	private static void GetReverseThigsDone(string sourcePath, IList<Todo> todos)
 	{
-		string[] allFiles = Directory.GetFiles(sourcePath, $"*.{Constants.Extension.PNG}", SearchOption.AllDirectories);
-		
+		string[] allFiles = Directory.GetFiles(sourcePath, $"*.{Constants.Extension.DDS}", SearchOption.AllDirectories);
+
 		if (!allFiles.Any())
 			return;
 
@@ -78,7 +77,6 @@ internal sealed class Program
 		foreach (string file in allFiles)
 		{
 			FileInfo fileInfo = new(file);
-			IImage image = ImageFactory.CreatePngImage(file);
 
 			// we can have multiple file results for one hash result!
 			IList<Todo> todoList = todos.Where(x => x.MD5String.Equals(fileInfo.Name.Replace(fileInfo.Extension, string.Empty), StringComparison.OrdinalIgnoreCase)).ToList();
@@ -88,7 +86,8 @@ internal sealed class Program
 				_ = Directory.CreateDirectory(targetFolder);
 
 				string targetFullName = Path.Combine($"{directoryInfo.FullName}{todo.RelativePath}", todo.FileName);
-				image.Save(targetFullName, compressionLevel);
+
+				File.Copy(file, targetFullName, true);
 
 				_ = todos.Remove(todo);
 				todosDone.Add(file);
