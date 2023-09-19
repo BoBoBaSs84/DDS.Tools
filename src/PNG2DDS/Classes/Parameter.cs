@@ -1,4 +1,4 @@
-﻿namespace DDS2PNG.Classes;
+﻿namespace PNG2DDS.Classes;
 
 internal sealed class Parameter
 {

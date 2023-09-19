@@ -1,5 +1,8 @@
-﻿using DDS2PNG.Classes;
+﻿using System.Globalization;
+
+using DDS2PNG.Classes;
 using DDS2PNG.Properties;
+
 using Shared.Library.Classes;
 using Shared.Library.Factories;
 using Shared.Library.Interfaces;
@@ -10,8 +13,8 @@ internal sealed class Program
 {
 	private static readonly IList<string> TodosDone = new List<string>();
 	private static readonly IList<Todo> Todos = new List<Todo>();
-	private static int TotalTodoCount;
-	private static int TotalTodoDuplicateCount;
+	private static int s_totalTodoCount;
+	private static int s_totalTodoDuplicateCount;
 
 	private static void Main(string[] args)
 	{
@@ -27,11 +30,11 @@ internal sealed class Program
 			GetThigsDone(parameter);
 
 			Console.Write($"\n" +
-				$"Conversion completed.\n" +
-				$"Number of files to convert: {Todos.Count}\n" +
-				$"Number of files converted: {TodosDone.Count}\n" +
-				$"Number of duplicates: {TotalTodoDuplicateCount}\n" +
-				$"Press key to exit.");
+					$"Conversion completed.\n" +
+					$"Number of files to convert: {Todos.Count}\n" +
+					$"Number of files converted: {TodosDone.Count}\n" +
+					$"Number of duplicates: {s_totalTodoDuplicateCount}\n" +
+					$"Press key to exit.");
 
 			_ = Console.ReadKey();
 		}
@@ -47,7 +50,7 @@ internal sealed class Program
 		if (args.Length < 2)
 		{
 			Console.WriteLine($"Please provide the texture source path ie.: 'D:\\Data\\Textures'\n" +
-				$"Please provide a search pattern for the files ie.: '*?n.dds'\n");
+					$"Please provide a search pattern for the files ie.: '*?n.dds'\n");
 			Environment.Exit(1);
 		}
 
@@ -97,8 +100,8 @@ internal sealed class Program
 			}
 		}
 
-		TotalTodoCount = Todos.Count;
-		
+		s_totalTodoCount = Todos.Count;
+
 		return;
 	}
 
@@ -110,7 +113,7 @@ internal sealed class Program
 			{
 				if (TodosDone.Contains(todo.MD5String))
 				{
-					TotalTodoDuplicateCount++;
+					s_totalTodoDuplicateCount++;
 					continue;
 				}
 
@@ -125,7 +128,7 @@ internal sealed class Program
 				continue;
 
 			string targetFolder = Path.Combine(todo.TargetPath, "textureMaps");
-			SaveImage(parameter, todo, targetFolder);			
+			SaveImage(parameter, todo, targetFolder);
 		}
 
 		string result = Helper.GetJsonResultFromList(Todos);
@@ -148,7 +151,7 @@ internal sealed class Program
 
 		TodosDone.Add(todo.MD5String);
 
-		string progress = (Convert.ToSingle(TodosDone.Count + TotalTodoDuplicateCount) * 100 / TotalTodoCount).ToString("#.##", CultureInfo.InvariantCulture);
+		string progress = (Convert.ToSingle(TodosDone.Count + s_totalTodoDuplicateCount) * 100 / s_totalTodoCount).ToString("#.##", CultureInfo.InvariantCulture);
 		Console.WriteLine($"{progress}%\t{Path.Combine(todo.RelativePath, todo.FileName)} -> {filePath}");
 	}
 

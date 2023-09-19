@@ -1,6 +1,8 @@
 ﻿using BCnEncoder.ImageSharp;
+
 using Shared.Library.Extensions;
 using Shared.Library.Interfaces;
+
 using SixLabors.ImageSharp.Formats.Png;
 
 namespace Shared.Library.Classes.Images;
@@ -12,7 +14,7 @@ internal sealed class DDSImage : IImage
 {
 	private readonly DDSDecoder _decoder = new();
 	private readonly Image<Rgba32> _image;
-	
+
 	public string FileName { get; }
 	public string FilePath { get; }
 	public int Heigth { get; }
@@ -34,7 +36,7 @@ internal sealed class DDSImage : IImage
 		_image = _decoder.DecodeToImageRgba32(fileStream);
 		Width = _image.Width;
 		Heigth = _image.Height;
-		
+
 		fileStream.Position = 0;
 		ImageData = Helper.StreamToByteArray(fileStream);
 		Md5Hash = Helper.GetMD5String(ImageData);

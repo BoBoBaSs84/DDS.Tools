@@ -1,7 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Shared.Library.Factories;
+﻿using Shared.Library.Factories;
 using Shared.Library.Interfaces;
-using System.Diagnostics.CodeAnalysis;
+
 using TC = Shared.LibraryTests.TestConstants;
 
 namespace Shared.LibraryTests.Classes.Images;
