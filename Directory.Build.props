@@ -1,6 +1,15 @@
 <Project>
 
 	<PropertyGroup>
+		<VersionMajor>$([System.DateTime]::UtcNow.Year)</VersionMajor>
+		<VersionMinor>$([System.DateTime]::UtcNow.Month)</VersionMinor>
+		<VersionPatch>$([System.DateTime]::UtcNow.Day)</VersionPatch>
+		<VersionRevision>$([System.DateTime]::UtcNow.TimeOfDay.TotalMinutes.ToString("0"))</VersionRevision>
+		<VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionPatch).$(VersionRevision)</VersionPrefix>
+		<VersionSuffix Condition="$(Configuration.Equals('Debug'))">Development</VersionSuffix>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<AllowUnsafeBlocks>False</AllowUnsafeBlocks>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -27,15 +36,15 @@
 		<Authors>BoBoBaSs84</Authors>
 		<Company>https://github.com/BoBoBaSs84</Company>
 		<Copyright>Copyright © $(VersionMajor) BoBoBaSs84</Copyright>
-		<Description>This is just an attempt to have a clean base architecture for database access.</Description>
+		<Description>This is a simple DDS and PNG tool set.</Description>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageProjectUrl>https://github.com/BoBoBaSs84/EF.Core.Database.Adapter</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/BoBoBaSs84/DDS.Tools</PackageProjectUrl>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageTags>dotnetcore;dotnet-core;efcore;entity-framework-core;ef-core</PackageTags>
-		<Product>EF.Core.Database.Adapter</Product>
+		<PackageTags>dds;png;image</PackageTags>
+		<Product>DDS.Tools</Product>
 		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/BoBoBaSs84/EF.Core.Database.Adapter</RepositoryUrl>
+		<RepositoryUrl>https://github.com/BoBoBaSs84/DDS.Tools</RepositoryUrl>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(Configuration.Equals('Debug'))">

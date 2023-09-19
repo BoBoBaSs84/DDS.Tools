@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+		<Title>DDS2PNG</Title>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 

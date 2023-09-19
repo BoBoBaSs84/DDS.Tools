@@ -1,8 +1,8 @@
 {
-  "profiles": {
-    "PNG2DDS": {
-      "commandName": "Project",
-      "commandLineArgs": "\"D:\\Test\\Result\""
-    }
-  }
+	"profiles": {
+		"PNG2DDS.DEV": {
+			"commandName": "Project",
+			"commandLineArgs": "\"D:\\Test\\Result\""
+		}
+	}
 }
