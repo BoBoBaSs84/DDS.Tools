@@ -1,12 +1,15 @@
-﻿using DDS2PNG.Classes;
+﻿using System.Globalization;
+
+using PNG2DDS.Classes;
 using PNG2DDS.Properties;
+
 using Shared.Library.Classes;
 
 namespace PNG2DDS;
 
 internal sealed class Program
 {
-	private static readonly IList<string> todosDone = new List<string>();
+	private static readonly IList<string> TodosDone = new List<string>();
 
 	private static void Main(string[] args)
 	{
@@ -22,10 +25,10 @@ internal sealed class Program
 			GetReverseThigsDone(param.SourceFolder, todos);
 
 			Console.Write($"\n" +
-				$"Conversion completed.\n" +
-				$"Number of files to convert left: {todos.Count}\n" +
-				$"Number of files converted: {todosDone.Count}\n" +
-				$"Press key to exit.");
+					$"Conversion completed.\n" +
+					$"Number of files to convert left: {todos.Count}\n" +
+					$"Number of files converted: {TodosDone.Count}\n" +
+					$"Press key to exit.");
 
 		}
 		catch (Exception ex)
@@ -90,9 +93,9 @@ internal sealed class Program
 				File.Copy(file, targetFullName, true);
 
 				_ = todos.Remove(todo);
-				todosDone.Add(file);
+				TodosDone.Add(file);
 
-				string progress = (Convert.ToSingle(todosDone.Count) * 100 / totalTodoCount).ToString("#.##", CultureInfo.InvariantCulture);
+				string progress = (Convert.ToSingle(TodosDone.Count) * 100 / totalTodoCount).ToString("#.##", CultureInfo.InvariantCulture);
 
 				Console.WriteLine($"{progress}%\t{file} -> {targetFullName}");
 			}
