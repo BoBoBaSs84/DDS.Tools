@@ -14,6 +14,9 @@ public class DDSImageTests
 	{
 		_sourcePath = Path.Combine(AppContext.BaseDirectory, TestConstants.SourceFolder);
 		_targetPath = Path.Combine(AppContext.BaseDirectory, TestConstants.TargetFolder);
+
+		Directory.CreateDirectory(_sourcePath);
+		Directory.CreateDirectory(_targetPath);
 	}
 
 	[TestMethod]
