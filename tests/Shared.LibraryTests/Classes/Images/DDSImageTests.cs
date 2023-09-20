@@ -1,26 +1,26 @@
 ﻿using Shared.Library.Factories;
 using Shared.Library.Interfaces;
 
-using TC = Shared.LibraryTests.TestConstants;
-
 namespace Shared.LibraryTests.Classes.Images;
 
 [TestClass]
-[SuppressMessage("Style", "IDE0058", Justification = "UnitTest")]
+[DeploymentItem(TestConstants.DdsImage, TestConstants.SourceFolder)]
 public class DDSImageTests
 {
+	private readonly string _sourcePath;
+	private readonly string _targetPath;
+
 	public DDSImageTests()
 	{
-		Directory.CreateDirectory(TC.SourceFolder);
-		Directory.CreateDirectory(TC.TargetFolder);
+		_sourcePath = Path.Combine(AppContext.BaseDirectory, TestConstants.SourceFolder);
+		_targetPath = Path.Combine(AppContext.BaseDirectory, TestConstants.TargetFolder);
 	}
 
 	[TestMethod]
-	[DeploymentItem(TC.DdsImage, TC.SourceFolder)]
 	public void SaveTest()
 	{
-		string sourceFolder = $"{TC.SourceFolder}\\{TC.DdsImage}";
-		string targetFolder = $"{TC.TargetFolder}\\{TC.PngImageSave}";
+		string sourceFolder = Path.Combine(_sourcePath, TestConstants.DdsImage);
+		string targetFolder = Path.Combine(_targetPath, TestConstants.PngImageSave);
 
 		IImage image = ImageFactory.CreateDdsImage(sourceFolder);
 		image.Save(targetFolder);
@@ -36,25 +36,23 @@ public class DDSImageTests
 	}
 
 	[TestMethod]
-	[DeploymentItem(TC.DdsImage, TC.SourceFolder)]
 	[ExpectedException(typeof(ArgumentOutOfRangeException))]
 	public void SaveWithCompressionExceptionTest()
 	{
 		int compressionLevel = 99;
-		string sourceFolder = $"{TC.SourceFolder}\\{TC.DdsImage}";
-		string targetFolder = $"{TC.TargetFolder}\\{TC.PngImageSave}";
+		string sourceFolder = Path.Combine(_sourcePath, TestConstants.DdsImage);
+		string targetFolder = Path.Combine(_targetPath, TestConstants.PngImageSave);
 
 		IImage image = ImageFactory.CreateDdsImage(sourceFolder);
 		image.Save(targetFolder, compressionLevel);
 	}
 
 	[TestMethod]
-	[DeploymentItem(TC.DdsImage, TC.SourceFolder)]
 	public void SaveWithCompressionTest()
 	{
 		int compressionLevel = 9;
-		string sourceFolder = $"{TC.SourceFolder}\\{TC.DdsImage}";
-		string targetFolder = $"{TC.TargetFolder}\\{compressionLevel}_{TC.PngImageSave}";
+		string sourceFolder = Path.Combine(_sourcePath, TestConstants.DdsImage);
+		string targetFolder = Path.Combine(_targetPath, $"{compressionLevel}_{TestConstants.PngImageSave}");
 
 		IImage image = ImageFactory.CreateDdsImage(sourceFolder);
 		image.Save(targetFolder, compressionLevel);
