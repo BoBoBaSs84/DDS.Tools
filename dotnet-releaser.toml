@@ -1,0 +1,9 @@
+# configuration file for dotnet-releaser
+[msbuild]
+project = "DDS.Tools.sln"
+configuration = "Release"
+[github]
+user = "BoBoBaSs84"
+repo = "DDS.Tools"
+[nuget]
+publish = false
