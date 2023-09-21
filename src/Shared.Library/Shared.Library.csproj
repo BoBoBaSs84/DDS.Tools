@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<Title>Shared.Library</Title>
-		<Platforms>x64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>

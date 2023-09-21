@@ -24,8 +24,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<PlatformTarget>x64</PlatformTarget>
-		<Platforms>x64</Platforms>
+		<Platforms>AnyCPU</Platforms>
 		<RunAnalyzersDuringBuild>True</RunAnalyzersDuringBuild>
 		<RunAnalyzersDuringLiveAnalysis>True</RunAnalyzersDuringLiveAnalysis>
 		<SignAssembly>true</SignAssembly>
@@ -33,18 +32,19 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('Tests'))">
-		<Authors>BoBoBaSs84</Authors>
-		<Company>https://github.com/BoBoBaSs84</Company>
-		<Copyright>Copyright © $(VersionMajor) BoBoBaSs84</Copyright>
+		<Author>BoBoBaSs84</Author>
+		<Authors>$(Author)</Authors>
+		<Company>https://github.com/$(Author)</Company>
+		<Copyright>Copyright © $(VersionMajor) $(Author)</Copyright>
 		<Description>This is a simple DDS and PNG tool set.</Description>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageProjectUrl>https://github.com/BoBoBaSs84/DDS.Tools</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/$(Author)/$(Product)</PackageProjectUrl>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageTags>dds;png;image</PackageTags>
+		<PackageTags>dds;png;image;tool</PackageTags>
 		<Product>DDS.Tools</Product>
 		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/BoBoBaSs84/DDS.Tools</RepositoryUrl>
+		<RepositoryUrl>https://github.com/$(Author)/$(Product)</RepositoryUrl>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(Configuration.Equals('Debug'))">
@@ -53,9 +53,9 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
-		<IsPackable>false</IsPackable>
-		<IsTestProject>true</IsTestProject>
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+		<IsTestProject>true</IsTestProject>
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup Condition="!$(MSBuildProjectName.EndsWith('Tests'))">
