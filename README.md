@@ -3,7 +3,7 @@
 [![Issues](https://img.shields.io/github/issues/BoBoBaSs84/DDS.Tools)](https://github.com/BoBoBaSs84/DDS.Tools/issues)
 [![Commit](https://img.shields.io/github/last-commit/BoBoBaSs84/DDS.Tools)](https://github.com/BoBoBaSs84/DDS.Tools/commit/main)
 [![Forks](https://img.shields.io/github/forks/BoBoBaSs84/DDS.Tools)](https://github.com/BoBoBaSs84/DDS.Tools/network)
-[![Size](https://img.shields.io/github/repo-size/BoBoBaSs84/DDS.Tools)](https://github.com/BoBoBaSs84/Los.Santos.Dope.Wars)
+[![Size](https://img.shields.io/github/repo-size/BoBoBaSs84/DDS.Tools)](https://github.com/BoBoBaSs84/DDS.Tools)
 [![stars](https://img.shields.io/github/stars/BoBoBaSs84/DDS.Tools)](https://github.com/BoBoBaSs84/DDS.Tools/stargazers)
 [![License](https://img.shields.io/github/license/BoBoBaSs84/DDS.Tools)](https://github.com/BoBoBaSs84/DDS.Tools/blob/main/LICENSE)
 
