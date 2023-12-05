@@ -1,6 +1,7 @@
-﻿using BCnEncoder.ImageSharp;
+﻿using BB84.Extensions;
 
-using Shared.Library.Extensions;
+using BCnEncoder.ImageSharp;
+
 using Shared.Library.Interfaces;
 
 using SixLabors.ImageSharp;
@@ -59,7 +60,7 @@ internal sealed class DDSImage : IImage
 		{
 			string errorMessage = "Possible compression level values are:\n";
 
-			foreach (PngCompressionLevel level in PngCompressionLevel.DefaultCompression.GetListFromEnum().Distinct())
+			foreach (PngCompressionLevel level in PngCompressionLevel.DefaultCompression.GetValues().Distinct())
 				errorMessage += $"\t{(int)level} - {level}\n";
 
 			errorMessage += $"Current value: '{compressionLevel}'";
