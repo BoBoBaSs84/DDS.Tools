@@ -371,4 +371,5 @@ indent_size = 2
 end_of_line = crlf
 dotnet_style_namespace_match_folder = true:suggestion
 insert_final_newline = true
+dotnet_style_prefer_collection_expression = true:suggestion
 
