@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 
+using BB84.Extensions.Serialization;
+
 using DDS2PNG.Classes;
 using DDS2PNG.Properties;
 
@@ -11,8 +13,8 @@ namespace DDS2PNG;
 
 internal sealed class Program
 {
-	private static readonly IList<string> TodosDone = new List<string>();
-	private static readonly IList<Todo> Todos = new List<Todo>();
+	private static readonly List<string> TodosDone = [];
+	private static readonly List<Todo> Todos = [];
 	private static int s_totalTodoCount;
 	private static int s_totalTodoDuplicateCount;
 
@@ -73,7 +75,7 @@ internal sealed class Program
 	{
 		string[] allFiles = Directory.GetFiles(parameter.SourceFolder, parameter.SearchPattern, SearchOption.AllDirectories);
 
-		if (!allFiles.Any())
+		if (allFiles.Length.Equals(0))
 			return;
 
 		DirectoryInfo directoryInfo = new(parameter.SourceFolder);
@@ -131,7 +133,7 @@ internal sealed class Program
 			SaveImage(parameter, todo, targetFolder);
 		}
 
-		string result = Helper.GetJsonResultFromList(Todos);
+		string result = Todos.ToJson();
 		string resultPath = Path.Combine(Todos.First().TargetPath, Constants.Result.FileName);
 		File.WriteAllText(resultPath, result);
 

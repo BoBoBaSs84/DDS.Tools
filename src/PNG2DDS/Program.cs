@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 
+using BB84.Extensions.Serialization;
+
 using PNG2DDS.Classes;
 using PNG2DDS.Properties;
 
@@ -9,7 +11,7 @@ namespace PNG2DDS;
 
 internal sealed class Program
 {
-	private static readonly IList<string> TodosDone = new List<string>();
+	private static readonly List<string> TodosDone = [];
 
 	private static void Main(string[] args)
 	{
@@ -17,7 +19,7 @@ internal sealed class Program
 		{
 			Parameter param = GetParameter(args);
 
-			IList<Todo> todos = GetReverseTodos(param.SourceFolder);
+			IList<Todo> todos = GetTodos(param.SourceFolder);
 
 			Console.WriteLine($"Found {todos.Count} files to process.\nPress key to start.");
 			_ = Console.ReadKey();
@@ -58,11 +60,11 @@ internal sealed class Program
 		return new(args[0], level);
 	}
 
-	private static IList<Todo> GetReverseTodos(string sourcePath)
+	private static List<Todo> GetTodos(string sourcePath)
 	{
-		string jsonResultContent = File.ReadAllText(Path.Combine(sourcePath, Constants.Result.FileName));
-		IList<Todo>? todos = Helper.GetListFromJsonResult(jsonResultContent);
-		todos ??= new List<Todo>();
+		string jsonContent = File.ReadAllText(Path.Combine(sourcePath, Constants.Result.FileName));
+		List<Todo>? todos = jsonContent.FromJson<List<Todo>>();
+		todos ??= [];
 		return todos;
 	}
 
@@ -70,7 +72,7 @@ internal sealed class Program
 	{
 		string[] allFiles = Directory.GetFiles(sourcePath, $"*.{Constants.Extension.DDS}", SearchOption.AllDirectories);
 
-		if (!allFiles.Any())
+		if (allFiles.Length.Equals(0))
 			return;
 
 		DirectoryInfo directoryInfo = new(sourcePath);

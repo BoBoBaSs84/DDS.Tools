@@ -1,7 +1,8 @@
-﻿using BCnEncoder.Encoder;
+﻿using BB84.Extensions;
+
+using BCnEncoder.Encoder;
 using BCnEncoder.ImageSharp;
 
-using Shared.Library.Extensions;
 using Shared.Library.Interfaces;
 
 using SixLabors.ImageSharp;
@@ -58,7 +59,7 @@ internal sealed class PNGImage : IImage
 		{
 			string errorMessage = "Possible compression level values are:\n";
 
-			foreach (CompressionQuality quality in CompressionQuality.Fast.GetListFromEnum().Distinct())
+			foreach (CompressionQuality quality in CompressionQuality.Fast.GetValues().Distinct())
 				errorMessage += $"\t{(int)quality} - {quality}\n";
 
 			throw new ArgumentOutOfRangeException(nameof(compressionLevel), errorMessage);
