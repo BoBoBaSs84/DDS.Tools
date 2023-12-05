@@ -4,6 +4,9 @@ using BCnEncoder.ImageSharp;
 using Shared.Library.Extensions;
 using Shared.Library.Interfaces;
 
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
 namespace Shared.Library.Classes.Images;
 
 /// <summary>

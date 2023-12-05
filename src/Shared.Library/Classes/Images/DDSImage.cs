@@ -3,7 +3,9 @@
 using Shared.Library.Extensions;
 using Shared.Library.Interfaces;
 
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Shared.Library.Classes.Images;
 
