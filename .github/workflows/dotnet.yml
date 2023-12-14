@@ -20,7 +20,7 @@ jobs:
         fetch-depth: 0
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
 
     - name: Build and Test
       run: dotnet test DDS.Tools.sln -c Release
