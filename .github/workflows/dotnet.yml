@@ -21,8 +21,11 @@ jobs:
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
 
     - name: Build and Test
+      if: github.event_name != 'push'
       run: dotnet test DDS.Tools.sln -c Release
       
     - name: Build, Tests, Cover, Pack and Publish (on push tag)

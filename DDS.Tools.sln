@@ -7,17 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7673C6BF-414
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C321AFEB-A037-43BE-BD6F-6DCF9AD96186}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CFC2BA36-6F66-40A1-8BC5-976D04EFBF4B}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		.gitignore = .gitignore
-		Directory.Build.props = Directory.Build.props
-		dotnet-releaser.toml = dotnet-releaser.toml
-		LICENSE = LICENSE
-		PublicKey.snk = PublicKey.snk
-		README.md = README.md
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Library", "src\Shared.Library\Shared.Library.csproj", "{BF2700B8-1A02-4609-92B5-1933D3C0F18E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PNG2DDS", "src\PNG2DDS\PNG2DDS.csproj", "{4EB04834-21E6-49A1-AAD0-91378B3B48CC}"
@@ -25,6 +14,18 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DDS2PNG", "src\DDS2PNG\DDS2PNG.csproj", "{5D030B57-9BA1-458A-8D3C-065A185DBC09}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.LibraryTests", "tests\Shared.LibraryTests\Shared.LibraryTests.csproj", "{D7407680-5DF3-4C48-BCD5-9DE910F10A15}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EF2EF755-8C69-4689-AD58-BBDE3C63CB4C}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.filenesting.json = .filenesting.json
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		dotnet-releaser.toml = dotnet-releaser.toml
+		LICENSE = LICENSE
+		PublicKey.snk = PublicKey.snk
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
