@@ -16,10 +16,10 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Setup .NET
+    - name: Setup
       uses: actions/setup-dotnet@v4
 
-    - name: Restore dependencies
+    - name: Restore
       run: dotnet restore
 
     - name: Build
