@@ -29,7 +29,6 @@ internal static class ServiceCollectionExtensions
 	{
 		services.RegisterLoggerService(environment);
 
-		services.AddSingleton<WeatherForecastService>();
 		services.AddSingleton<DdsEncoder>();
 		services.AddSingleton<DdsDecoder>();
 		services.AddSingleton<ITodoService, TodoService>();

@@ -8,15 +8,16 @@ namespace DDS.ToolsTests.Models;
 [TestClass()]
 public class DdsImageModelTests : UnitTestBase
 {
-	private static readonly string ResourcePath = Path.Combine(Environment.CurrentDirectory, "Resources");
-	private static readonly string FilePath = Path.Combine(ResourcePath, "outfit101m.dds");
-	private static readonly string NewFilePath = Path.Combine(ResourcePath, "new_outfit101m.png");
+	private static readonly string FilePath = Path.Combine(TestConstants.DdsResourcePath, "32A.dds");
+	private static readonly string NewFilePath = Path.Combine(TestConstants.ResourcePath, "new_32a.png");
 
-	[ClassInitialize]
-	public static void ClassInitialize(TestContext context)
+	[TestCleanup]
+	public override void TestCleanup()
 	{
 		if (File.Exists(NewFilePath))
 			File.Delete(NewFilePath);
+
+		base.TestCleanup();
 	}
 
 	[TestMethod]

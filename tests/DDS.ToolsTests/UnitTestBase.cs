@@ -18,11 +18,11 @@ public abstract class UnitTestBase
 	}
 
 	[TestInitialize]
-	public void TestInitialize()
+	public virtual void TestInitialize()
 		=> s_context?.WriteLine($"Initialize {s_context.TestName} ..");
 
 	[TestCleanup]
-	public void TestCleanup()
+	public virtual void TestCleanup()
 		=> s_context?.WriteLine($"Cleanup {s_context.TestName} ..");
 
 	public static IServiceProvider ServiceProvider { get; private set; } = default!;
@@ -34,4 +34,11 @@ public abstract class UnitTestBase
 
 		return host.Start();
 	}
+}
+
+public static class TestConstants
+{
+	public static readonly string ResourcePath = Path.Combine(Environment.CurrentDirectory, "Resources");
+	public static readonly string PngResourcePath = Path.Combine(ResourcePath, "PNG");
+	public static readonly string DdsResourcePath = Path.Combine(ResourcePath, "DDS");
 }

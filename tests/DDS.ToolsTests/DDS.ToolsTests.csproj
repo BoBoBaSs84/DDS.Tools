@@ -12,10 +12,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Resources\outfit101m.dds">
+	  <None Update="Resources\DDS\32.dds">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
-	  <None Update="Resources\outfit101m.png">
+	  <None Update="Resources\DDS\32A.dds">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\PNG\32.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\PNG\32A.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\PNG\outfit101m.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>

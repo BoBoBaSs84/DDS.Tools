@@ -14,10 +14,6 @@ internal static class ConfiguratorExtensions
 {
 	internal static IConfigurator ConfigureCommands(this IConfigurator configurator)
 	{
-		configurator.AddCommand<WeatherForecastCommand>("forecasts")
-			.WithDescription("Display local weather forecasts.")
-			.WithExample(["forecasts", "5"]);
-
 		configurator.AddCommand<DdsConvertCommand>("dds")
 			.WithDescription("Converts dds files into png files.")
 			.WithExample(["dds", @"""D:\DDS-Textures"""]);

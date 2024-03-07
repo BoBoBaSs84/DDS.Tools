@@ -3,7 +3,7 @@
 /// <summary>
 /// The image file types.
 /// </summary>
-internal enum ImageType
+public enum ImageType
 {
 	DDS = 1,
 	PNG = 2
