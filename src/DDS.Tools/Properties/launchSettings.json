@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "DDS.Tools.DEV.DDS": {
+      "commandName": "Project",
+      "commandLineArgs": "dds \"D:\\Modding\\DDS\""
+    },
+    "DDS.Tools.DEV.PNG": {
+      "commandName": "Project",
+      "commandLineArgs": "png \"D:\\Modding\\PNG\""
+    }
+  }
+}

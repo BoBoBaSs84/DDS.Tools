@@ -35,11 +35,11 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		if (files.Length.Equals(0))
 			return todos;
 
+		DirectoryInfo directoryInfo = new(settings.SourceFolder);
+		string targetPath = Path.Combine(directoryInfo.Parent!.FullName, ResultFolder);
+
 		try
 		{
-			DirectoryInfo directoryInfo = new(settings.SourceFolder);
-			string targetPath = Path.Combine(directoryInfo.Parent!.FullName, ResultFolder);
-
 			foreach (string file in files)
 			{
 				if (IgnoreFile(settings, file))
@@ -61,6 +61,19 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 			_logger.Log(LogException, ex);
 			AnsiConsole.Markup($"[maroon]{ex.Message}[/]");
 			return todos;
+		}
+	}
+
+	public void GetTodosDone(TodoCollection todos, ConvertSettings settings, ImageType imageType)
+	{
+		try
+		{
+
+		}
+		catch (Exception ex)
+		{
+			_logger.Log(LogException, ex);
+			AnsiConsole.Markup($"[maroon]{ex.Message}[/]");
 		}
 	}
 
