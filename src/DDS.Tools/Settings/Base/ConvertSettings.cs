@@ -19,6 +19,13 @@ internal abstract class ConvertSettings : CommandSettings
 	public string SourceFolder { get; set; } = string.Empty;
 
 	/// <summary>
+	/// The target folder of the images.
+	/// </summary>
+	[Description(@"The target folder of the images.")]
+	[CommandArgument(0, "<TargetFolder>")]
+	public string TargetFolder { get; set; } = string.Empty;
+
+	/// <summary>
 	/// The convert mode to use.
 	/// </summary>
 	[Description($"The convert mode to use.\n" +

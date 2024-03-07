@@ -16,11 +16,11 @@ internal static class ConfiguratorExtensions
 	{
 		configurator.AddCommand<DdsConvertCommand>("dds")
 			.WithDescription("Converts dds files into png files.")
-			.WithExample(["dds", @"""D:\DDS-Textures"""]);
+			.WithExample(["dds", @"""D:\DDS-Textures""", @"""D:\PNG-Textures"""]);
 
 		configurator.AddCommand<PngConvertCommand>("png")
 			.WithDescription("Converts png files into dds files.")
-			.WithExample(["png", @"""D:\PNG-Textures"""]);
+			.WithExample(["png", @"""D:\PNG-Textures""", @"""D:\DDS-Textures"""]);
 
 		return configurator;
 	}

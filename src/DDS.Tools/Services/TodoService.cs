@@ -89,4 +89,12 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		}
 		return false;
 	}
+
+	private string SaveImage(ConvertSettings settings, TodoModel todo, ImageType imageType)
+	{
+		IImageModel image = _provider.GetRequiredKeyedService<IImageModel>(imageType);
+		image.Load(todo.FullPathName);
+
+		return string.Empty;
+	} 
 }
