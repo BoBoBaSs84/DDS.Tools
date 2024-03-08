@@ -19,8 +19,6 @@ public sealed class DdsConvertSettingsTests : UnitTestBase
 			ConvertMode = ConvertModeType.Manual,
 			RetainStructure = false,
 			SeparateBySize = true,
-			SeparateMaps = true,
-			IgnoreMaps = true,
 		};
 
 		Assert.AreEqual(TestConstants.ResourcePath, settings.SourceFolder);
@@ -29,7 +27,5 @@ public sealed class DdsConvertSettingsTests : UnitTestBase
 		Assert.AreEqual(ConvertModeType.Manual, settings.ConvertMode);
 		Assert.IsFalse(settings.RetainStructure);
 		Assert.IsTrue(settings.SeparateBySize);
-		Assert.IsTrue(settings.SeparateMaps);
-		Assert.IsTrue(settings.IgnoreMaps);
 	}
 }

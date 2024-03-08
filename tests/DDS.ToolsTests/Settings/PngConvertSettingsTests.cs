@@ -18,9 +18,7 @@ public sealed class PngConvertSettingsTests : UnitTestBase
 			Compression = CompressionQuality.Fast,
 			ConvertMode = ConvertModeType.Manual,
 			RetainStructure = false,
-			IgnoreMaps = true,
 			SeparateBySize = true,
-			SeparateMaps = true
 		};
 
 		Assert.AreEqual(TestConstants.ResourcePath, settings.SourceFolder);
@@ -28,8 +26,6 @@ public sealed class PngConvertSettingsTests : UnitTestBase
 		Assert.AreEqual(CompressionQuality.Fast, settings.Compression);
 		Assert.AreEqual(ConvertModeType.Manual, settings.ConvertMode);
 		Assert.IsFalse(settings.RetainStructure);
-		Assert.IsTrue(settings.IgnoreMaps);
 		Assert.IsTrue(settings.SeparateBySize);
-		Assert.IsTrue(settings.SeparateMaps);
 	}
 }

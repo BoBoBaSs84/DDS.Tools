@@ -41,20 +41,6 @@ internal abstract class ConvertSettings : CommandSettings
 	public bool RetainStructure { get; set; }
 
 	/// <summary>
-	/// Should texture maps be tried to be separated?
-	/// </summary>
-	[Description("Should texture maps be tried to be separated?")]
-	[CommandOption("-s|--separate")]
-	public bool SeparateMaps { get; set; }
-
-	/// <summary>
-	/// Should texture maps be tried to be ignored?
-	/// </summary>
-	[Description("Should texture maps be tried to be ignored?")]
-	[CommandOption("-i|--ignore")]
-	public bool IgnoreMaps { get; set; }
-
-	/// <summary>
 	/// Should the textures be separated by size?
 	/// </summary>
 	[Description("Should the textures be separated by size?")]
