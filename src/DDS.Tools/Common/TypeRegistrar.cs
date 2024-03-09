@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -5,7 +7,12 @@ using Spectre.Console.Cli;
 
 namespace DDS.Tools.Common;
 
-public sealed class TypeRegistrar(IHostBuilder builder) : ITypeRegistrar
+/// <summary>
+/// The type registrar class.
+/// </summary>
+/// <param name="builder">The host builder instance to use.</param>
+[ExcludeFromCodeCoverage]
+internal sealed class TypeRegistrar(IHostBuilder builder) : ITypeRegistrar
 {
 	private readonly IHostBuilder _builder = builder;
 

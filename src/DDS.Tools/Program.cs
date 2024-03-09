@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using DDS.Tools.Common;
@@ -8,7 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-internal class Program
+[ExcludeFromCodeCoverage(Justification = "Program startup class.")]
+internal sealed class Program
 {
 	private static readonly Assembly Assembly = typeof(Program).Assembly;
 
@@ -21,9 +23,7 @@ internal class Program
 		IHostBuilder builder = Host.CreateDefaultBuilder(args)
 			.ConfigureServices((context, services) => services.RegisterServices(context.HostingEnvironment));
 
-		TypeRegistrar registrar = new(builder);
-
-		CommandApp app = new(registrar);
+		CommandApp app = new(new TypeRegistrar(builder));
 
 		// Register available commands
 		app.Configure(config => config.ConfigureCommands());
