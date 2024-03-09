@@ -1,9 +1,7 @@
 <Project>
-
 	<PropertyGroup>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<PackageVersion Include="BB84.Extensions" Version="2.1.0" />
 		<PackageVersion Include="BCnEncoder.Net" Version="2.1.0" />
@@ -18,5 +16,4 @@
 		<PackageVersion Include="MSTest.TestFramework" Version="3.2.2" />
 		<PackageVersion Include="coverlet.collector" Version="6.0.1" />
 	</ItemGroup>
-
 </Project>

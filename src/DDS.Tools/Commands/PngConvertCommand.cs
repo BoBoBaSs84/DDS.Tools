@@ -38,13 +38,15 @@ internal sealed class PngConvertCommand(ILoggerService<DdsConvertCommand> logger
 	{
 		try
 		{
-			TodoCollection todods = _todoService.GetTodos(settings, Type);
+			TodoCollection todos = _todoService.GetTodos(settings, Type);
 
-			if (todods.Count.Equals(0))
+			if (todos.Count.Equals(0))
 			{
 				AnsiConsole.MarkupLine($"[yellow]There is nothing todo![/]");
-				return 0;
+				return 1;
 			}
+
+			_todoService.GetTodosDone(todos, settings, Type);
 
 			return 0;
 		}

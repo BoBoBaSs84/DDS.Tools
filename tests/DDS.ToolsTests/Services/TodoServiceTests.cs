@@ -2,6 +2,7 @@
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
 using DDS.Tools.Settings;
+using DDS.Tools.Settings.Base;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +11,6 @@ namespace DDS.ToolsTests.Services;
 [TestClass]
 public sealed class TodoServiceTests : UnitTestBase
 {
-	private static readonly string ResourcePath = Path.Combine(Environment.CurrentDirectory, "Resources");
 	private readonly ITodoService _todoService;
 
 	public TodoServiceTests()
@@ -20,7 +20,7 @@ public sealed class TodoServiceTests : UnitTestBase
 	[DynamicData(nameof(GetResourceData))]
 	public void GetTodosTest(string resourcePath, ImageType type, int expected)
 	{
-		DdsConvertSettings settings = new() { SourceFolder = resourcePath };
+		DdsConvertSettings settings = new() { SourceFolder = resourcePath, TargetFolder = resourcePath };
 
 		TodoCollection todos = _todoService.GetTodos(settings, type);
 
@@ -28,9 +28,11 @@ public sealed class TodoServiceTests : UnitTestBase
 	}
 
 	[TestMethod]
-	public void GetTodosExceptionTest()
+	public void GetTodosSourceFolderNotFoundTest()
 	{
-		TodoCollection todos = _todoService.GetTodos(null!, ImageType.DDS);
+		ConvertSettings settings = new DdsConvertSettings() { SourceFolder = @"X:\FooBar" };
+
+		TodoCollection todos = _todoService.GetTodos(settings, ImageType.DDS);
 
 		Assert.AreEqual(0, todos.Count);
 	}

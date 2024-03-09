@@ -2,6 +2,7 @@
 using BB84.Extensions.Serialization;
 
 using DDS.Tools.Enumerators;
+using DDS.Tools.Exceptions;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
@@ -36,13 +37,18 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 
 		try
 		{
+			string sourceFolder = settings.SourceFolder;
+
+			if (!Directory.Exists(sourceFolder))
+				throw new ServiceException($"Directory '{sourceFolder}' not found.");
+
 			string searchPattern = $"*.{imageType}";
-			string[] files = Directory.GetFiles(settings.SourceFolder, searchPattern, SearchOption.AllDirectories);
+			string[] files = Directory.GetFiles(sourceFolder, searchPattern, SearchOption.AllDirectories);
 
 			if (files.Length.Equals(0))
 				return todos;
 
-			DirectoryInfo directoryInfo = new(settings.SourceFolder);
+			DirectoryInfo directoryInfo = new(sourceFolder);
 
 			foreach (string file in files)
 			{

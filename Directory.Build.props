@@ -36,7 +36,10 @@
 		<Authors>$(Author)</Authors>
 		<Company>https://github.com/$(Author)</Company>
 		<Copyright>Copyright © $(VersionMajor) $(Author)</Copyright>
-		<Description>This is a simple DDS and PNG tool set.</Description>
+		<Description>
+			This is a simple DDS and PNG tool set that converts DDS images to PNG images and vice versa on a large scale.
+			Has options for duplicate detection and sorting.
+		</Description>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/$(Author)/$(Product)</PackageProjectUrl>
