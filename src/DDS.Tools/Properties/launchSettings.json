@@ -2,11 +2,17 @@
   "profiles": {
     "DDS.Tools.DEV.DDS": {
       "commandName": "Project",
-      "commandLineArgs": "dds \"D:\\Modding\\DDS\""
+      "commandLineArgs": "dds \"D:\\Modding\\DDS\" \"D:\\Modding\\DDS\\Result\"",
+      "environmentVariables": {
+        "DOTNET_ENVIROMENT": "Development"
+      }
     },
     "DDS.Tools.DEV.PNG": {
       "commandName": "Project",
-      "commandLineArgs": "png \"D:\\Modding\\PNG\""
+      "commandLineArgs": "png \"D:\\Modding\\PNG\" \"D:\\Modding\\PNG\\Result\"",
+      "environmentVariables": {
+        "DOTNET_ENVIROMENT": "Development"
+      }
     }
   }
 }

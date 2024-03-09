@@ -23,7 +23,6 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 {
 	private readonly ILoggerService<TodoService> _logger = logger;
 	private readonly IServiceProvider _provider = provider;
-	private const string ResultFolder = "Result";
 	private readonly List<string> _todosDone = [];
 	private int _todosDuplicateCount = 0;
 
@@ -44,15 +43,18 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 				return todos;
 
 			DirectoryInfo directoryInfo = new(settings.SourceFolder);
-			string targetPath = Path.Combine(directoryInfo.Parent!.FullName, ResultFolder);
 
 			foreach (string file in files)
 			{
+				FileInfo fileInfo = new(file);
+
+				string relativePath = $"{fileInfo.DirectoryName!.Replace(directoryInfo.Parent!.FullName, string.Empty)}";
+
 				IImageModel image = _provider.GetRequiredKeyedService<IImageModel>(imageType);
 
 				image.Load(file);
 
-				todos.Add(new(image.Name, settings.TargetFolder, file, targetPath, image.Hash));
+				todos.Add(new(image.Name, relativePath, file, settings.TargetFolder, image.Hash));
 			}
 
 			return todos;
