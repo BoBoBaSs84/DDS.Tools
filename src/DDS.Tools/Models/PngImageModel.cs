@@ -55,7 +55,7 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 		catch (Exception ex)
 		{
 			_logger.Log(LogExceptionWithParams, filePath, ex);
-			AnsiConsole.Markup($"[maroon]{ex.Message}[/]");
+			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
 		}
 	}
 
@@ -79,7 +79,7 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 		catch (Exception ex)
 		{
 			_logger.Log(LogExceptionWithParams, filePath, ex);
-			AnsiConsole.Markup($"[maroon]{ex.Message}[/]");
+			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
 		}
 	}
 

@@ -42,7 +42,7 @@ internal sealed class PngConvertCommand(ILoggerService<DdsConvertCommand> logger
 
 			if (todods.Count.Equals(0))
 			{
-				AnsiConsole.Markup($"[yellow]There is nothing todo![/]");
+				AnsiConsole.MarkupLine($"[yellow]There is nothing todo![/]");
 				return 0;
 			}
 
@@ -51,7 +51,7 @@ internal sealed class PngConvertCommand(ILoggerService<DdsConvertCommand> logger
 		catch (Exception ex)
 		{
 			_loggerService.Log(LogException, ex);
-			AnsiConsole.Markup($"[maroon]{ex.Message}[/]");
+			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
 			return 1;
 		}
 	}

@@ -56,7 +56,7 @@ internal sealed class DdsImageModel(DdsDecoder ddsDecoder, ILoggerService<DdsIma
 		catch (Exception ex)
 		{
 			_logger.Log(LogExceptionWithParams, filePath, ex);
-			AnsiConsole.Markup($"[maroon]{ex.Message}[/]");
+			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
 		}
 	}
 
@@ -77,7 +77,7 @@ internal sealed class DdsImageModel(DdsDecoder ddsDecoder, ILoggerService<DdsIma
 		catch (Exception ex)
 		{
 			_logger.Log(LogExceptionWithParams, filePath, ex);
-			AnsiConsole.Markup($"[maroon]{ex.Message}[/]");
+			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
 		}
 	}
 }

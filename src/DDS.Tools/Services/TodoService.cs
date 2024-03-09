@@ -1,4 +1,7 @@
-﻿using DDS.Tools.Enumerators;
+﻿using BB84.Extensions;
+using BB84.Extensions.Serialization;
+
+using DDS.Tools.Enumerators;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
@@ -66,25 +69,37 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 	{
 		try
 		{
-			foreach (var todo in todos)
-			{
-				if (_todosDone.Contains(todo.Hash))
-				{
-					AnsiConsole.MarkupLine($"[yellow]{todo.FileName} is a duplicate[/]");
-					_todosDuplicateCount++;
-					continue;
-				}
+			todos.AsParallel().ForEach(t => GetTodoDone(t, settings, imageType));
 
-				SaveImage(settings, todo, imageType);
-				
-				_todosDone.Add(todo.Hash);
+			if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
+			{
+				string jsonResult = todos.ToJson();
+				string jsonResultPath = Path.Combine(settings.TargetFolder, "Result.json");
+				File.WriteAllText(jsonResultPath, jsonResult);
 			}
+
+			AnsiConsole.MarkupLine($"[green]Todos done:\t{_todosDone.Count}[/]");
+			AnsiConsole.MarkupLine($"[yellow]Duplicates:\t{_todosDuplicateCount}[/]");
 		}
 		catch (Exception ex)
 		{
 			_logger.Log(LogException, ex);
-			AnsiConsole.Markup($"[maroon]{ex.Message}[/]");
+			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
 		}
+	}
+
+	private void GetTodoDone(TodoModel todo, ConvertSettings settings, ImageType imageType)
+	{
+		if (_todosDone.Contains(todo.Hash))
+		{
+			AnsiConsole.MarkupLine($"[yellow]{todo.FileName} is a duplicate[/]");
+			_todosDuplicateCount++;
+			return;
+		}
+
+		SaveImage(settings, todo, imageType);
+
+		_todosDone.Add(todo.Hash);
 	}
 
 	private void SaveImage(ConvertSettings settings, TodoModel todo, ImageType imageType)
@@ -93,7 +108,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		image.Load(todo.FullPathName);
 
 		string targetFolder = PrepareTargetFolder(settings, image, todo.TargetPath);
-		Directory.CreateDirectory(targetFolder);
+		_ = Directory.CreateDirectory(targetFolder);
 
 		string newFileName = $"{GetTargetFileName(settings, todo)}.{GetTargetFileExtensions(imageType)}";
 		string newFilePath = Path.Combine(targetFolder, newFileName);
