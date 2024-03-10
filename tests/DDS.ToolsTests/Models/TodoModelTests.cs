@@ -14,7 +14,7 @@ public sealed class TodoModelTests
 		Assert.AreEqual(string.Empty, todo.FileName);
 		Assert.AreEqual(string.Empty, todo.FullPathName);
 		Assert.AreEqual(string.Empty, todo.RelativePath);
-		Assert.AreEqual(string.Empty, todo.TargetPath);
-		Assert.AreEqual(string.Empty, todo.Hash);
+		Assert.AreEqual(string.Empty, todo.TargetFolder);
+		Assert.AreEqual(string.Empty, todo.FileHash);
 	}
 }

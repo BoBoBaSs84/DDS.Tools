@@ -42,6 +42,14 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 			if (!Directory.Exists(sourceFolder))
 				throw new ServiceException($"Directory '{sourceFolder}' not found.");
 
+			if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
+			{
+				string jsonFilePath = Path.Combine(sourceFolder, "Result.json");
+				string jsonFileContent = File.ReadAllText(jsonFilePath);
+				todos = jsonFileContent.FromJson<TodoCollection>();
+				return todos;
+			}
+
 			string searchPattern = $"*.{imageType}";
 			string[] files = Directory.GetFiles(sourceFolder, searchPattern, SearchOption.AllDirectories);
 
@@ -81,9 +89,9 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 
 			if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
 			{
-				string jsonResult = todos.ToJson();
-				string jsonResultPath = Path.Combine(settings.TargetFolder, "Result.json");
-				File.WriteAllText(jsonResultPath, jsonResult);
+				string jsonContent = todos.ToJson();
+				string jsonFilePath = Path.Combine(settings.TargetFolder, "Result.json");
+				File.WriteAllText(jsonFilePath, jsonContent);
 			}
 
 			AnsiConsole.MarkupLine($"[green]Todos done:\t{_todosDone.Count}[/]");
@@ -98,7 +106,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 
 	private void GetTodoDone(TodoModel todo, ConvertSettings settings, ImageType imageType)
 	{
-		if (_todosDone.Contains(todo.Hash))
+		if (_todosDone.Contains(todo.FileHash))
 		{
 			AnsiConsole.MarkupLine($"[yellow]{todo.FileName} is a duplicate[/]");
 			_todosDuplicateCount++;
@@ -107,7 +115,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 
 		SaveImage(settings, todo, imageType);
 
-		_todosDone.Add(todo.Hash);
+		_todosDone.Add(todo.FileHash);
 	}
 
 	private void SaveImage(ConvertSettings settings, TodoModel todo, ImageType imageType)
@@ -115,7 +123,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		IImageModel image = _provider.GetRequiredKeyedService<IImageModel>(imageType);
 		image.Load(todo.FullPathName);
 
-		string targetFolder = PrepareTargetFolder(settings, image, todo.TargetPath);
+		string targetFolder = PrepareTargetFolder(settings, image, todo.TargetFolder);
 		_ = Directory.CreateDirectory(targetFolder);
 
 		string newFileName = $"{GetTargetFileName(settings, todo)}.{GetTargetFileExtensions(imageType)}";
@@ -151,7 +159,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 			return todo.FileName.Replace(info.Extension, string.Empty);
 		}
 
-		return todo.Hash;
+		return todo.FileHash;
 	}
 
 	private static string GetTargetFileExtensions(ImageType imageType)

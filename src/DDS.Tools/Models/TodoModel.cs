@@ -8,9 +8,9 @@ namespace DDS.Tools.Models;
 /// <param name="fileName">The name of the image file.</param>
 /// <param name="relativePath">The relative path of the image file.</param>
 /// <param name="fullPathName">The full path and file name of the image.</param>
-/// <param name="targetPath">The target path of the image file.</param>
-/// <param name="hash">The md5 hash of the image file.</param>
-public sealed class TodoModel(string fileName, string relativePath, string fullPathName, string targetPath, string hash)
+/// <param name="targetFolder">The target path of the image file.</param>
+/// <param name="fileHash">The md5 hash of the image file.</param>
+public sealed class TodoModel(string fileName, string relativePath, string fullPathName, string targetFolder, string fileHash)
 {
 	/// <summary>
 	/// The name of the image file.
@@ -25,19 +25,19 @@ public sealed class TodoModel(string fileName, string relativePath, string fullP
 	/// <summary>
 	/// The full path and file name of the image.
 	/// </summary>
-	[JsonIgnore]
+	[JsonIgnore(Condition = JsonIgnoreCondition.Always)]
 	public string FullPathName { get; } = fullPathName;
 
 	/// <summary>
 	/// The target path of the image file.
 	/// </summary>
-	[JsonIgnore]
-	public string TargetPath { get; } = targetPath;
+	[JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+	public string TargetFolder { get; } = targetFolder;
 
 	/// <summary>
 	/// The md5 hash of the image file.
 	/// </summary>
-	public string Hash { get; private set; } = hash;
+	public string FileHash { get; } = fileHash;
 }
 
 /// <summary>
