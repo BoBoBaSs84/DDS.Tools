@@ -31,56 +31,55 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
 
 	/// <inheritdoc/>
+	/// <exception cref="ServiceException"></exception>
 	public TodoCollection GetTodos(ConvertSettings settings, ImageType imageType)
 	{
-		TodoCollection todos = [];
-
 		try
 		{
-			string sourceFolder = settings.SourceFolder;
-
-			if (!Directory.Exists(sourceFolder))
-				throw new ServiceException($"Directory '{sourceFolder}' not found.");
-
-			if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
-			{
-				string jsonFilePath = Path.Combine(sourceFolder, "Result.json");
-				string jsonFileContent = File.ReadAllText(jsonFilePath);
-				todos = jsonFileContent.FromJson<TodoCollection>();
-				return todos;
-			}
+			TodoCollection todos = [];
 
 			string searchPattern = $"*.{imageType}";
-			string[] files = Directory.GetFiles(sourceFolder, searchPattern, SearchOption.AllDirectories);
+			string[] files = Directory.GetFiles(settings.SourceFolder, searchPattern, SearchOption.AllDirectories);
 
 			if (files.Length.Equals(0))
 				return todos;
 
-			DirectoryInfo directoryInfo = new(sourceFolder);
-
-			foreach (string file in files)
-			{
-				FileInfo fileInfo = new(file);
-
-				string relativePath = $"{fileInfo.DirectoryName!.Replace(directoryInfo.Parent!.FullName, string.Empty)}";
-
-				IImageModel image = _provider.GetRequiredKeyedService<IImageModel>(imageType);
-
-				image.Load(file);
-
-				todos.Add(new(image.Name, relativePath, file, settings.TargetFolder, image.Hash));
-			}
+			files.AsParallel().ForEach(file => GetTodo(todos, settings, imageType, file));
 
 			return todos;
 		}
 		catch (Exception ex)
 		{
 			_logger.Log(LogException, ex);
-			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
-			return todos;
+			throw new ServiceException($"Something went wrong in {nameof(GetTodos)}!", ex);
 		}
 	}
 
+	/// <inheritdoc/>
+	/// <exception cref="ServiceException"></exception>
+	public TodoCollection GetTodosFromJson(ConvertSettings settings, ImageType imageType, string jsonFilePath)
+	{
+		try
+		{
+			TodoCollection todos = [];
+
+			string jsonFileContent = File.ReadAllText(jsonFilePath);
+
+			TodoCollection todosFromJson = jsonFileContent.FromJson<TodoCollection>();
+
+			todosFromJson.AsParallel().ForEach(tfj => GetTodoFromJson(todos, settings, imageType, tfj));
+
+			return todos;
+		}
+		catch (Exception ex)
+		{
+			_logger.Log(LogException, ex);
+			throw new ServiceException($"Something went wrong in {nameof(GetTodosFromJson)}!", ex);
+		}
+	}
+
+	/// <inheritdoc/>
+	/// <exception cref="ServiceException"></exception>
 	public void GetTodosDone(TodoCollection todos, ConvertSettings settings, ImageType imageType)
 	{
 		try
@@ -100,17 +99,69 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		catch (Exception ex)
 		{
 			_logger.Log(LogException, ex);
-			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
+			throw new ServiceException($"Something went wrong in {nameof(GetTodosDone)}!", ex);
 		}
+	}
+
+	/// <inheritdoc/>
+	public void GetTodosDoneFromJson(TodoCollection todos, ConvertSettings settings, ImageType imageType)
+	{
+		try
+		{
+			todos.AsParallel().ForEach(t => GetTodoDone(t, settings, imageType));
+
+		}
+		catch (Exception ex)
+		{
+			_logger.Log(LogException, ex);
+			throw new ServiceException($"Something went wrong in {nameof(GetTodosDoneFromJson)}!", ex);
+		}
+	}
+
+	private void GetTodo(TodoCollection todos, ConvertSettings settings, ImageType imageType, string file)
+	{
+		FileInfo fileInfo = new(file);
+
+		IImageModel image = _provider.GetRequiredKeyedService<IImageModel>(imageType);
+		image.Load(file);
+
+		TodoModel todo = new(
+			fileName: fileInfo.Name,
+			relativePath: $"{fileInfo.DirectoryName?.Replace(settings.SourceFolder, string.Empty)}",
+			fullPathName: fileInfo.FullName,
+			targetFolder: settings.TargetFolder,
+			fileHash: image.Hash
+			);
+
+		todos.Add(todo);
+	}
+
+	private static void GetTodoFromJson(TodoCollection todos, ConvertSettings settings, ImageType imageType, TodoModel todoFromJson)
+	{
+		string newFullPathName =
+			Path.Combine(settings.TargetFolder, todoFromJson.RelativePath, todoFromJson.FileName.Replace(GetTargetFileExtensions(imageType), $"{imageType}"));
+
+		TodoModel todo = new(
+			fileName: $"{todoFromJson.FileHash}.{GetTargetFileExtensions(imageType)}",
+			relativePath: todoFromJson.RelativePath,
+			fullPathName: newFullPathName,
+			targetFolder: settings.TargetFolder,
+			fileHash: todoFromJson.FileHash
+			);
+
+		todos.Add(todo);
 	}
 
 	private void GetTodoDone(TodoModel todo, ConvertSettings settings, ImageType imageType)
 	{
-		if (_todosDone.Contains(todo.FileHash))
+		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
 		{
-			AnsiConsole.MarkupLine($"[yellow]{todo.FileName} is a duplicate[/]");
-			_todosDuplicateCount++;
-			return;
+			if (_todosDone.Contains(todo.FileHash))
+			{
+				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
+				_todosDuplicateCount++;
+				return;
+			}
 		}
 
 		SaveImage(settings, todo, imageType);

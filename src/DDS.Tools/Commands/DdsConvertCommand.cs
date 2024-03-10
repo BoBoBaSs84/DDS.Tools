@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 using DDS.Tools.Enumerators;
+using DDS.Tools.Exceptions;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
 using DDS.Tools.Settings;
@@ -38,7 +39,16 @@ internal sealed class DdsConvertCommand(ILoggerService<DdsConvertCommand> logger
 	{
 		try
 		{
-			TodoCollection todos = _todoService.GetTodos(settings, Type);			
+			TodoCollection todos = [];
+
+			if (!Directory.Exists(settings.SourceFolder))
+				throw new CommandException($"Directory '{settings.SourceFolder}' not found.");
+
+			string jsonFilePath = Path.Combine(settings.SourceFolder, "Result.json");
+
+			todos = File.Exists(jsonFilePath)
+				? _todoService.GetTodosFromJson(settings, Type, jsonFilePath)
+				: _todoService.GetTodos(settings, Type);
 
 			if (todos.Count.Equals(0))
 			{
