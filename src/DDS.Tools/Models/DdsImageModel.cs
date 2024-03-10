@@ -2,7 +2,6 @@
 
 using BCnEncoder.ImageSharp;
 
-using DDS.Tools.Extensions;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models.Base;

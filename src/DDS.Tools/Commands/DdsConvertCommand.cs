@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+using DDS.Tools.Commands.Base;
 using DDS.Tools.Enumerators;
-using DDS.Tools.Exceptions;
 using DDS.Tools.Interfaces.Services;
-using DDS.Tools.Models;
 using DDS.Tools.Settings;
 
 using Microsoft.Extensions.Logging;
@@ -18,11 +17,10 @@ namespace DDS.Tools.Commands;
 /// </summary>
 /// <param name="loggerService">The logger service instance to use.</param>
 /// <param name="todoService">The todo service instance to use.</param>
-internal sealed class DdsConvertCommand(ILoggerService<DdsConvertCommand> loggerService, ITodoService todoService) : Command<DdsConvertSettings>
+internal sealed class DdsConvertCommand(ILoggerService<DdsConvertCommand> loggerService, ITodoService todoService) : ConvertCommandBase<DdsConvertSettings>(todoService)
 {
 	private const ImageType Type = ImageType.DDS;
 	private readonly ILoggerService<DdsConvertCommand> _loggerService = loggerService;
-	private readonly ITodoService _todoService = todoService;
 
 	private static readonly Action<ILogger, Exception?> LogException =
 		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
@@ -30,35 +28,11 @@ internal sealed class DdsConvertCommand(ILoggerService<DdsConvertCommand> logger
 	/// <inheritdoc/>
 	public override int Execute([NotNull] CommandContext context, [NotNull] DdsConvertSettings settings)
 	{
-		return AnsiConsole.Status()
-			.Spinner(Spinner.Known.Line)
-			.Start("Processing..", action => Action(settings));
-	}
-
-	private int Action(DdsConvertSettings settings)
-	{
 		try
 		{
-			TodoCollection todos = [];
-
-			if (!Directory.Exists(settings.SourceFolder))
-				throw new CommandException($"Directory '{settings.SourceFolder}' not found.");
-
-			string jsonFilePath = Path.Combine(settings.SourceFolder, "Result.json");
-
-			todos = File.Exists(jsonFilePath)
-				? _todoService.GetTodosFromJson(settings, Type, jsonFilePath)
-				: _todoService.GetTodos(settings, Type);
-
-			if (todos.Count.Equals(0))
-			{
-				AnsiConsole.MarkupLine($"[yellow]There is nothing todo![/]");
-				return 1;
-			}
-
-			_todoService.GetTodosDone(todos, settings, Type);
-
-			return 0;
+			return AnsiConsole.Status()
+				.Spinner(Spinner.Known.Line)
+				.Start("Processing..", action => Action(settings, Type));
 		}
 		catch (Exception ex)
 		{
