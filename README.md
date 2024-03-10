@@ -10,6 +10,10 @@
 
 # DDS.Tools
 
+I needed some tools that were able to do some slight lifting so I can do some modding.
+This is a simple DDS and PNG tool set that converts DDS images to PNG images and vice versa on a large scale.
+Has options for duplicate detection and sorting.
+
 ## DDS2PNG
 
 The usage is pretty simple:
