@@ -11,7 +11,7 @@ namespace DDS.Tools.Settings;
 /// <summary>
 /// The dds convert settings class.
 /// </summary>
-internal sealed class DdsConvertSettings : ConvertSettings
+internal sealed class DdsConvertSettings : ConvertSettingsBase
 {
 	/// <summary>
 	/// The compression level in which the images should be saved.

@@ -7,9 +7,9 @@ using Spectre.Console.Cli;
 namespace DDS.Tools.Settings.Base;
 
 /// <summary>
-/// The convert settings class
+/// The convert settings base class
 /// </summary>
-internal abstract class ConvertSettings : CommandSettings
+internal abstract class ConvertSettingsBase : CommandSettings
 {
 	/// <summary>
 	/// The source folder of the images.

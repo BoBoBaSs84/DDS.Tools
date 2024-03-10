@@ -30,7 +30,7 @@ public sealed class TodoServiceTests : UnitTestBase
 	[TestMethod]
 	public void GetTodosSourceFolderNotFoundTest()
 	{
-		ConvertSettings settings = new DdsConvertSettings() { SourceFolder = @"X:\FooBar" };
+		ConvertSettingsBase settings = new DdsConvertSettings() { SourceFolder = @"X:\FooBar" };
 
 		TodoCollection todos = _todoService.GetTodos(settings, ImageType.DDS);
 

@@ -15,20 +15,21 @@ namespace DDS.Tools.Commands.Base;
 /// <inheritdoc/>
 internal abstract class ConvertCommandBase<TSettings>(ITodoService todoService) : Command<TSettings> where TSettings : CommandSettings
 {
-	private readonly ITodoService _todoService = todoService;
+	private const string ResultFileName = "Result.json";
 
-	protected int Action(ConvertSettings settings, ImageType imageType)
+	protected int Action(ConvertSettingsBase settings, ImageType imageType)
 	{
 		TodoCollection todos;
 
 		if (!Directory.Exists(settings.SourceFolder))
 			throw new CommandException($"Directory '{settings.SourceFolder}' not found.");
 
-		string jsonFilePath = Path.Combine(settings.SourceFolder, "Result.json");
+		string jsonFilePath = Path.Combine(settings.SourceFolder, ResultFileName);
+		bool resultFileExists = File.Exists(jsonFilePath);
 
-		todos = File.Exists(jsonFilePath)
-			? _todoService.GetTodosFromJson(settings, imageType, jsonFilePath)
-			: _todoService.GetTodos(settings, imageType);
+		todos = resultFileExists
+			? todoService.GetTodosFromJson(settings, imageType, jsonFilePath)
+			: todoService.GetTodos(settings, imageType);
 
 		if (todos.Count.Equals(0))
 		{
@@ -36,7 +37,10 @@ internal abstract class ConvertCommandBase<TSettings>(ITodoService todoService) 
 			return 1;
 		}
 
-		_todoService.GetTodosDone(todos, settings, imageType);
+		if (resultFileExists)
+			todoService.GetTodosDoneFromJson(todos, settings, imageType);
+		else
+			todoService.GetTodosDone(todos, settings, imageType);
 
 		return 0;
 	}

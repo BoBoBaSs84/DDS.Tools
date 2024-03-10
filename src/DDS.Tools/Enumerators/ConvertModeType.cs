@@ -9,7 +9,7 @@ public enum ConvertModeType
 	/// The automatic mode.
 	/// </summary>
 	Automatic = 0,
-	
+
 	/// <summary>
 	/// The manual mode.
 	/// </summary>

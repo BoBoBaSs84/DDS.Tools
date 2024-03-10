@@ -32,7 +32,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
-	public TodoCollection GetTodos(ConvertSettings settings, ImageType imageType)
+	public TodoCollection GetTodos(ConvertSettingsBase settings, ImageType imageType)
 	{
 		try
 		{
@@ -57,7 +57,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
-	public TodoCollection GetTodosFromJson(ConvertSettings settings, ImageType imageType, string jsonFilePath)
+	public TodoCollection GetTodosFromJson(ConvertSettingsBase settings, ImageType imageType, string jsonFilePath)
 	{
 		try
 		{
@@ -80,7 +80,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
-	public void GetTodosDone(TodoCollection todos, ConvertSettings settings, ImageType imageType)
+	public void GetTodosDone(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType)
 	{
 		try
 		{
@@ -104,7 +104,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 	}
 
 	/// <inheritdoc/>
-	public void GetTodosDoneFromJson(TodoCollection todos, ConvertSettings settings, ImageType imageType)
+	public void GetTodosDoneFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType)
 	{
 		try
 		{
@@ -118,7 +118,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		}
 	}
 
-	private void GetTodo(TodoCollection todos, ConvertSettings settings, ImageType imageType, string file)
+	private void GetTodo(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, string file)
 	{
 		FileInfo fileInfo = new(file);
 
@@ -136,7 +136,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		todos.Add(todo);
 	}
 
-	private static void GetTodoFromJson(TodoCollection todos, ConvertSettings settings, ImageType imageType, TodoModel todoFromJson)
+	private static void GetTodoFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, TodoModel todoFromJson)
 	{
 		string newFullPathName =
 			Path.Combine(settings.TargetFolder, todoFromJson.RelativePath, todoFromJson.FileName.Replace(GetTargetFileExtensions(imageType), $"{imageType}"));
@@ -152,7 +152,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		todos.Add(todo);
 	}
 
-	private void GetTodoDone(TodoModel todo, ConvertSettings settings, ImageType imageType)
+	private void GetTodoDone(TodoModel todo, ConvertSettingsBase settings, ImageType imageType)
 	{
 		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
 		{
@@ -169,7 +169,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		_todosDone.Add(todo.FileHash);
 	}
 
-	private void SaveImage(ConvertSettings settings, TodoModel todo, ImageType imageType)
+	private void SaveImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
 	{
 		IImageModel image = _provider.GetRequiredKeyedService<IImageModel>(imageType);
 		image.Load(todo.FullPathName);
@@ -183,7 +183,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		image.Save(newFilePath);
 	}
 
-	private static string PrepareTargetFolder(ConvertSettings settings, IImageModel image, string targetFolder)
+	private static string PrepareTargetFolder(ConvertSettingsBase settings, IImageModel image, string targetFolder)
 	{
 		string newTargetFolder = targetFolder;
 
@@ -202,7 +202,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		return newTargetFolder;
 	}
 
-	private static string GetTargetFileName(ConvertSettings settings, TodoModel todo)
+	private static string GetTargetFileName(ConvertSettingsBase settings, TodoModel todo)
 	{
 		if (settings.ConvertMode == ConvertModeType.Manual && settings.RetainStructure)
 		{

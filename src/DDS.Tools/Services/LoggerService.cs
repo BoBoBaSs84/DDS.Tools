@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-using Microsoft.Extensions.Logging;
 using DDS.Tools.Interfaces.Services;
+
+using Microsoft.Extensions.Logging;
 
 namespace DDS.Tools.Services;
 
