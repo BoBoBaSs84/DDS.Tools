@@ -41,4 +41,5 @@ public static class TestConstants
 	public static readonly string ResourcePath = Path.Combine(Environment.CurrentDirectory, "Resources");
 	public static readonly string PngResourcePath = Path.Combine(ResourcePath, "PNG");
 	public static readonly string DdsResourcePath = Path.Combine(ResourcePath, "DDS");
+	public static readonly string JsonResourcePath = Path.Combine(ResourcePath, "JSON");
 }

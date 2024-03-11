@@ -18,12 +18,12 @@ namespace DDS.Tools.Services;
 /// <summary>
 /// The todo service class.
 /// </summary>
-/// <param name="logger">The logger service instance to use.</param>
-/// <param name="provider">The service provider instance to use.</param>
-internal sealed class TodoService(ILoggerService<TodoService> logger, IServiceProvider provider) : ITodoService
+/// <param name="loggerService">The logger service instance to use.</param>
+/// <param name="serviceProvider">The service provider instance to use.</param>
+internal sealed class TodoService(ILoggerService<TodoService> loggerService, IServiceProvider serviceProvider) : ITodoService
 {
-	private readonly ILoggerService<TodoService> _logger = logger;
-	private readonly IServiceProvider _provider = provider;
+	private readonly ILoggerService<TodoService> _loggerService = loggerService;
+	private readonly IServiceProvider _serviceProvider = serviceProvider;
 	private readonly List<string> _todosDone = [];
 	private int _todosDuplicateCount = 0;
 
@@ -38,8 +38,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		{
 			TodoCollection todos = [];
 
-			string searchPattern = $"*.{imageType}";
-			string[] files = Directory.GetFiles(settings.SourceFolder, searchPattern, SearchOption.AllDirectories);
+			string[] files = Directory.GetFiles(settings.SourceFolder, $"*.{imageType}", SearchOption.AllDirectories);
 
 			if (files.Length.Equals(0))
 				return todos;
@@ -50,7 +49,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		}
 		catch (Exception ex)
 		{
-			_logger.Log(LogException, ex);
+			_loggerService.Log(LogException, ex);
 			throw new ServiceException($"Something went wrong in {nameof(GetTodos)}!", ex);
 		}
 	}
@@ -73,7 +72,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		}
 		catch (Exception ex)
 		{
-			_logger.Log(LogException, ex);
+			_loggerService.Log(LogException, ex);
 			throw new ServiceException($"Something went wrong in {nameof(GetTodosFromJson)}!", ex);
 		}
 	}
@@ -98,7 +97,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		}
 		catch (Exception ex)
 		{
-			_logger.Log(LogException, ex);
+			_loggerService.Log(LogException, ex);
 			throw new ServiceException($"Something went wrong in {nameof(GetTodosDone)}!", ex);
 		}
 	}
@@ -113,7 +112,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		}
 		catch (Exception ex)
 		{
-			_logger.Log(LogException, ex);
+			_loggerService.Log(LogException, ex);
 			throw new ServiceException($"Something went wrong in {nameof(GetTodosDoneFromJson)}!", ex);
 		}
 	}
@@ -122,7 +121,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 	{
 		FileInfo fileInfo = new(file);
 
-		IImageModel image = _provider.GetRequiredKeyedService<IImageModel>(imageType);
+		IImageModel image = _serviceProvider.GetRequiredKeyedService<IImageModel>(imageType);
 		image.Load(file);
 
 		TodoModel todo = new(
@@ -171,7 +170,7 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 
 	private void SaveImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
 	{
-		IImageModel image = _provider.GetRequiredKeyedService<IImageModel>(imageType);
+		IImageModel image = _serviceProvider.GetRequiredKeyedService<IImageModel>(imageType);
 		image.Load(todo.FullPathName);
 
 		string targetFolder = PrepareTargetFolder(settings, image, todo.TargetFolder);
@@ -213,11 +212,9 @@ internal sealed class TodoService(ILoggerService<TodoService> logger, IServicePr
 		return todo.FileHash;
 	}
 
-	private static string GetTargetFileExtensions(ImageType imageType)
-		=> imageType switch
-		{
-			ImageType.DDS => $"{ImageType.PNG}",
-			ImageType.PNG => $"{ImageType.DDS}",
-			_ => string.Empty,
-		};
+	private static string GetTargetFileExtensions(ImageType imageType) => imageType switch
+	{
+		ImageType.DDS => $"{ImageType.PNG}",
+		_ => $"{ImageType.DDS}"
+	};
 }

@@ -9,6 +9,7 @@ namespace DDS.Tools.Extensions;
 /// <summary>
 /// The configurator extensions class.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "Not relevant here.")]
 [SuppressMessage("Style", "IDE0058", Justification = "Not relevant here.")]
 internal static class ConfiguratorExtensions
 {
