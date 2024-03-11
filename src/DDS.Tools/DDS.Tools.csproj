@@ -6,12 +6,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="BB84.Extensions" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" />
-		<PackageReference Include="Spectre.Console" />
-		<PackageReference Include="Spectre.Console.Cli" />
 		<PackageReference Include="BCnEncoder.Net" />
 		<PackageReference Include="BCnEncoder.Net.ImageSharp" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" />
 		<PackageReference Include="SixLabors.ImageSharp" />
+		<PackageReference Include="Spectre.Console" />
+		<PackageReference Include="Spectre.Console.Cli" />
 	</ItemGroup>
 
 	<ItemGroup>
