@@ -161,7 +161,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		IImageModel image = _serviceProvider.GetRequiredKeyedService<IImageModel>(imageType);
 		image.Load(todo.FullPathName);
 
-		string targetFolder = PrepareTargetFolder(settings, image, todo.TargetFolder);
+		string targetFolder = PrepareTargetFolder(settings, image, todo);
 		_ = Directory.CreateDirectory(targetFolder);
 
 		string newFileName = $"{GetTargetFileName(settings, todo)}.{GetTargetFileExtensions(imageType)}";
@@ -170,9 +170,9 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		image.Save(newFilePath);
 	}
 
-	private static string PrepareTargetFolder(ConvertSettingsBase settings, IImageModel image, string targetFolder)
+	private static string PrepareTargetFolder(ConvertSettingsBase settings, IImageModel image, TodoModel todo)
 	{
-		string newTargetFolder = targetFolder;
+		string newTargetFolder = todo.TargetFolder;
 
 		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
 		{
@@ -181,7 +181,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		}
 
 		if (settings.RetainStructure)
-			return newTargetFolder;
+			return $"{newTargetFolder}{todo.RelativePath}";
 
 		if (settings.SeparateBySize)
 			newTargetFolder = Path.Combine(newTargetFolder, $"{image.Width}");

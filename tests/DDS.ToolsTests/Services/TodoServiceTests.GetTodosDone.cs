@@ -19,7 +19,7 @@ public sealed partial class TodoServiceTests
 		PngConvertSettings settings = new()
 		{
 			SourceFolder = TestConstants.PngResourcePath,
-			TargetFolder = TestConstants.PngResultPath
+			TargetFolder = TestConstants.DdsResultPath
 		};
 
 		TodoCollection todos = s_todoService.GetTodos(settings, imageType);
@@ -34,7 +34,7 @@ public sealed partial class TodoServiceTests
 		PngConvertSettings settings = new()
 		{
 			SourceFolder = TestConstants.DdsResourcePath,
-			TargetFolder = TestConstants.DdsResultPath,
+			TargetFolder = TestConstants.PngResultPath,
 			ConvertMode = ConvertModeType.Manual,
 			RetainStructure = true
 		};
