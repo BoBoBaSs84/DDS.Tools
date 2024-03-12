@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "DDS.Tools.DEV.DDS": {
+      "commandName": "Project",
+      "commandLineArgs": "dds \"D:\\Modding\\DDS\" \"D:\\Modding\\PNGResult\"",
+      "environmentVariables": {
+        "DOTNET_ENVIROMENT": "Development"
+      }
+    },
+    "DDS.Tools.DEV.PNG": {
+      "commandName": "Project",
+      "commandLineArgs": "png \"D:\\Modding\\PNG\" \"D:\\Modding\\DDSResult\"",
+      "environmentVariables": {
+        "DOTNET_ENVIROMENT": "Development"
+      }
+    }
+  }
+}
