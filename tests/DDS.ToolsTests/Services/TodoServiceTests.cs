@@ -15,9 +15,10 @@ public sealed partial class TodoServiceTests : UnitTestBase
 		=> s_todoService = ServiceProvider.GetRequiredService<ITodoService>();
 
 	private static IEnumerable<object[]> GetTodosData
-		=> new[]
-		{
-			new object[] { TestConstants.PngResourcePath, ImageType.PNG, 4 },
-			[TestConstants.PngResourcePath, ImageType.DDS, 0]
+		=> new object[][]{
+		[TestConstants.PngResourcePath, ImageType.PNG, 6],
+		[TestConstants.PngResourcePath, ImageType.DDS, 0],
+		[TestConstants.DdsResourcePath, ImageType.DDS, 6],
+		[TestConstants.DdsResourcePath, ImageType.PNG, 0]
 		};
 }

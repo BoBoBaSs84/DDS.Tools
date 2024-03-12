@@ -1,4 +1,5 @@
-﻿using DDS.Tools.Enumerators;
+﻿using DDS.Tools.Common;
+using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
@@ -15,8 +16,6 @@ namespace DDS.Tools.Commands.Base;
 /// <inheritdoc/>
 internal abstract class ConvertCommandBase<TSettings>(ITodoService todoService) : Command<TSettings> where TSettings : CommandSettings
 {
-	private const string ResultFileName = "Result.json";
-
 	protected int Action(ConvertSettingsBase settings, ImageType imageType)
 	{
 		TodoCollection todos;
@@ -24,24 +23,33 @@ internal abstract class ConvertCommandBase<TSettings>(ITodoService todoService) 
 		if (!Directory.Exists(settings.SourceFolder))
 			throw new CommandException($"Directory '{settings.SourceFolder}' not found.");
 
-		string jsonFilePath = Path.Combine(settings.SourceFolder, ResultFileName);
-		bool resultFileExists = File.Exists(jsonFilePath);
+		string jsonFilePath = Path.Combine(settings.SourceFolder, Constants.ResultFileName);
+		bool jsonExists = ResultJsonExists(jsonFilePath);
 
-		todos = resultFileExists
-			? todoService.GetTodosFromJson(settings, imageType, jsonFilePath)
-			: todoService.GetTodos(settings, imageType);
+		if (!jsonExists)
+		{
+			todos = todoService.GetTodos(settings, imageType);
+			return GetItDone(todoService, todos, settings, imageType, jsonExists);
+		}
+		else
+		{
+			string jsonFileContent = File.ReadAllText(jsonFilePath);
+			todos = todoService.GetTodos(settings, imageType, jsonFileContent);
+			return GetItDone(todoService, todos, settings, imageType, jsonExists);
+		}
+	}
 
+	private static bool ResultJsonExists(string jsonFilePath) => File.Exists(jsonFilePath);
+
+	private static int GetItDone(ITodoService todoService, TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, bool jsonExists)
+	{
 		if (todos.Count.Equals(0))
 		{
 			AnsiConsole.MarkupLine($"[yellow]There is nothing todo![/]");
 			return 1;
 		}
 
-		if (resultFileExists)
-			todoService.GetTodosDoneFromJson(todos, settings, imageType);
-		else
-			todoService.GetTodosDone(todos, settings, imageType);
-
+		todoService.GetTodosDone(todos, settings, imageType, jsonExists);
 		return 0;
 	}
 }

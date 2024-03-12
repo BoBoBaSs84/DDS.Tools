@@ -7,14 +7,14 @@ namespace DDS.ToolsTests.Services;
 
 public sealed partial class TodoServiceTests
 {
-	private static readonly string JsonFilePath = Path.Combine(TestConstants.JsonResourcePath, "Result.json");
+	private static readonly string JsonFileContent = "[{\"fileName\": \"32.dds\",\"relativePath\": \"\",\"fileHash\": \"3B6242065CC51D558E45CD5868A18A36\"}]";
 
 	[TestMethod]
 	public void GetTodosFromJsonTest()
 	{
 		DdsConvertSettings settings = new() { SourceFolder = @"X:\FooBar" };
 
-		TodoCollection todos = s_todoService.GetTodosFromJson(settings, ImageType.DDS, JsonFilePath);
+		TodoCollection todos = s_todoService.GetTodos(settings, ImageType.DDS, JsonFileContent);
 
 		Assert.AreEqual(1, todos.Count);
 		Assert.AreEqual("3B6242065CC51D558E45CD5868A18A36.PNG", todos.First().FileName);
@@ -27,6 +27,6 @@ public sealed partial class TodoServiceTests
 	{
 		DdsConvertSettings settings = new() { SourceFolder = @"X:\FooBar" };
 
-		_ = s_todoService.GetTodosFromJson(settings, ImageType.PNG, string.Empty);
+		_ = s_todoService.GetTodos(settings, ImageType.PNG, string.Empty);
 	}
 }

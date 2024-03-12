@@ -1,11 +1,13 @@
 ﻿using BB84.Extensions;
 using BB84.Extensions.Serialization;
 
+using DDS.Tools.Common;
 using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
+using DDS.Tools.Properties;
 using DDS.Tools.Settings.Base;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -50,19 +52,18 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		catch (Exception ex)
 		{
 			_loggerService.Log(LogException, ex);
-			throw new ServiceException($"Something went wrong in {nameof(GetTodos)}!", ex);
+			string message = Resources.ServiceException_Message.FormatInvariant(nameof(GetTodos));
+			throw new ServiceException(message, ex);
 		}
 	}
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
-	public TodoCollection GetTodosFromJson(ConvertSettingsBase settings, ImageType imageType, string jsonFilePath)
+	public TodoCollection GetTodos(ConvertSettingsBase settings, ImageType imageType, string jsonFileContent)
 	{
 		try
 		{
 			TodoCollection todos = [];
-
-			string jsonFileContent = File.ReadAllText(jsonFilePath);
 
 			TodoCollection todosFromJson = jsonFileContent.FromJson<TodoCollection>();
 
@@ -73,22 +74,23 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		catch (Exception ex)
 		{
 			_loggerService.Log(LogException, ex);
-			throw new ServiceException($"Something went wrong in {nameof(GetTodosFromJson)}!", ex);
+			string message = Resources.ServiceException_Message.FormatInvariant(nameof(GetTodos));
+			throw new ServiceException(message, ex);
 		}
 	}
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
-	public void GetTodosDone(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType)
+	public void GetTodosDone(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, bool jsonExists = false)
 	{
 		try
 		{
 			todos.AsParallel().ForEach(t => GetTodoDone(t, settings, imageType));
 
-			if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
+			if (!jsonExists && settings.ConvertMode.Equals(ConvertModeType.Automatic))
 			{
 				string jsonContent = todos.ToJson();
-				string jsonFilePath = Path.Combine(settings.TargetFolder, "Result.json");
+				string jsonFilePath = Path.Combine(settings.TargetFolder, Constants.ResultFileName);
 				File.WriteAllText(jsonFilePath, jsonContent);
 			}
 
@@ -98,22 +100,8 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		catch (Exception ex)
 		{
 			_loggerService.Log(LogException, ex);
-			throw new ServiceException($"Something went wrong in {nameof(GetTodosDone)}!", ex);
-		}
-	}
-
-	/// <inheritdoc/>
-	public void GetTodosDoneFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType)
-	{
-		try
-		{
-			todos.AsParallel().ForEach(t => GetTodoDone(t, settings, imageType));
-
-		}
-		catch (Exception ex)
-		{
-			_loggerService.Log(LogException, ex);
-			throw new ServiceException($"Something went wrong in {nameof(GetTodosDoneFromJson)}!", ex);
+			string message = Resources.ServiceException_Message.FormatInvariant(nameof(GetTodosDone));
+			throw new ServiceException(message, ex);
 		}
 	}
 

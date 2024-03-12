@@ -19,13 +19,13 @@ internal interface ITodoService
 
 	/// <summary>
 	/// Returns a collection of todos depending on the provided <see cref="ConvertSettingsBase"/>
-	/// and the <paramref name="jsonContent"/>.
+	/// and the <paramref name="jsonFileContent"/>.
 	/// </summary>
 	/// <param name="settings">The settings that need to be considered.</param>
 	/// <param name="imageType">The image type to work with.</param>
-	/// <param name="jsonContent">The json content to work with.</param>
+	/// <param name="jsonFileContent">The json content to work with.</param>
 	/// <returns>A collection of todos.</returns>
-	TodoCollection GetTodosFromJson(ConvertSettingsBase settings, ImageType imageType, string jsonContent);
+	TodoCollection GetTodos(ConvertSettingsBase settings, ImageType imageType, string jsonFileContent);
 
 	/// <summary>
 	/// Get the todos done.
@@ -33,13 +33,6 @@ internal interface ITodoService
 	/// <param name="todos">The collection of todos.</param>
 	/// <param name="settings">The settings that need to be considered.</param>
 	/// <param name="imageType">The image type to work with.</param>
-	void GetTodosDone(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType);
-
-	/// <summary>
-	/// Get the todos done in a different way.
-	/// </summary>
-	/// <param name="todos">The collection of todos.</param>
-	/// <param name="settings">The settings that need to be considered.</param>
-	/// <param name="imageType">The image type to work with.</param>
-	void GetTodosDoneFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType);
+	/// <param name="jsonExists">Do the todos come from a json result file?</param>
+	void GetTodosDone(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, bool jsonExists = false);
 }

@@ -11,6 +11,12 @@
 		<None Update="Resources\DDS\32A.dds">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Resources\DDS\Blue\64.DDS">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Resources\DDS\Blue\64A.DDS">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Resources\DDS\Red\64.DDS">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
@@ -28,6 +34,12 @@
 		</None>
 		<None Update="Resources\PNG\outfit101m.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Resources\PNG\Blue\64.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Resources\PNG\Blue\64A.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Resources\PNG\Red\64.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
