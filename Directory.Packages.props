@@ -14,6 +14,6 @@
 		<PackageVersion Include="Spectre.Console" Version="0.48.0" />
 		<PackageVersion Include="Spectre.Console.Cli" Version="0.48.0" />
 		<PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
-		<PackageVersion Include="coverlet.collector" Version="6.0.1" />
+		<PackageVersion Include="coverlet.collector" Version="6.0.2" />
 	</ItemGroup>
 </Project>
