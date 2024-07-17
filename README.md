@@ -9,9 +9,6 @@
 [![License](https://img.shields.io/github/license/BoBoBaSs84/DDS.Tools)](https://github.com/BoBoBaSs84/DDS.Tools/blob/main/LICENSE)
 [![Release](https://img.shields.io/github/v/release/BoBoBaSs84/DDS.Tools)](https://github.com/BoBoBaSs84/DDS.Tools/releases/latest)
 
-
-
-
 # DDS.Tools
 
 I needed some tools that were able to do some slight lifting so I can do some modding.
