@@ -3,7 +3,7 @@
 /// <summary>
 /// The convert mode types.
 /// </summary>
-public enum ConvertModeType
+public enum ConvertModeType : byte
 {
 	/// <summary>
 	/// The automatic mode.
