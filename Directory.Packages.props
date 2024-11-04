@@ -7,7 +7,7 @@
     <PackageVersion Include="BCnEncoder.Net" Version="2.1.0" />
     <PackageVersion Include="BCnEncoder.Net.ImageSharp" Version="1.1.1" />
     <PackageVersion Include="MSTest.TestAdapter" Version="3.6.2" />
-    <PackageVersion Include="MSTest.TestFramework" Version="3.6.1" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.6.2" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.5" />
