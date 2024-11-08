@@ -17,7 +17,9 @@ namespace DDS.Tools.Commands;
 /// </summary>
 /// <param name="loggerService">The logger service instance to use.</param>
 /// <param name="todoService">The todo service instance to use.</param>
-internal sealed class DdsConvertCommand(ILoggerService<DdsConvertCommand> loggerService, ITodoService todoService) : ConvertCommandBase<DdsConvertSettings>(todoService)
+/// <param name="serviceProvider">The service provier instance to use.</param>
+internal sealed class DdsConvertCommand(ILoggerService<DdsConvertCommand> loggerService, ITodoService todoService, IServiceProvider serviceProvider)
+	: ConvertCommandBase<DdsConvertSettings>(todoService, serviceProvider)
 {
 	private const ImageType Type = ImageType.DDS;
 	private readonly ILoggerService<DdsConvertCommand> _loggerService = loggerService;

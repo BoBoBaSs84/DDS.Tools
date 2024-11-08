@@ -1,9 +1,12 @@
 ﻿using DDS.Tools.Common;
 using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
+using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
 using DDS.Tools.Settings.Base;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -14,16 +17,22 @@ namespace DDS.Tools.Commands.Base;
 /// The convert command base class.
 /// </summary>
 /// <inheritdoc/>
-internal abstract class ConvertCommandBase<TSettings>(ITodoService todoService) : Command<TSettings> where TSettings : CommandSettings
+/// <param name="todoService">The todo service instance to use.</param>
+/// <param name="serviceProvider">The service provier instance to use.</param>
+internal abstract class ConvertCommandBase<TSettings>(ITodoService todoService, IServiceProvider serviceProvider) : Command<TSettings> where TSettings : CommandSettings
 {
+	private readonly IDirectoryProvider _directoryProvider = serviceProvider.GetRequiredService<IDirectoryProvider>();
+	private readonly IFileProvider _fileProvider = serviceProvider.GetRequiredService<IFileProvider>();
+	private readonly IPathProvider _pathProvider = serviceProvider.GetRequiredService<IPathProvider>();
+
 	protected int Action(ConvertSettingsBase settings, ImageType imageType)
 	{
 		TodoCollection todos;
 
-		if (!Directory.Exists(settings.SourceFolder))
+		if (!_directoryProvider.Exists(settings.SourceFolder))
 			throw new CommandException($"Directory '{settings.SourceFolder}' not found.");
 
-		string jsonFilePath = Path.Combine(settings.SourceFolder, Constants.ResultFileName);
+		string jsonFilePath = _pathProvider.Combine(settings.SourceFolder, Constants.ResultFileName);
 		bool jsonExists = ResultJsonExists(jsonFilePath);
 
 		if (!jsonExists)
@@ -33,13 +42,14 @@ internal abstract class ConvertCommandBase<TSettings>(ITodoService todoService) 
 		}
 		else
 		{
-			string jsonFileContent = File.ReadAllText(jsonFilePath);
+			string jsonFileContent = _fileProvider.ReadAllText(jsonFilePath);
 			todos = todoService.GetTodos(settings, imageType, jsonFileContent);
 			return GetItDone(todoService, todos, settings, imageType, jsonExists);
 		}
 	}
 
-	private static bool ResultJsonExists(string jsonFilePath) => File.Exists(jsonFilePath);
+	private bool ResultJsonExists(string jsonFilePath)
+		=> _fileProvider.Exists(jsonFilePath);
 
 	private static int GetItDone(ITodoService todoService, TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, bool jsonExists)
 	{

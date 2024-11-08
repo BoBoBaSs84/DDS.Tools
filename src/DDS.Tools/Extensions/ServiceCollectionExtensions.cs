@@ -2,8 +2,10 @@
 
 using DDS.Tools.Enumerators;
 using DDS.Tools.Interfaces.Models;
+using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
+using DDS.Tools.Providers;
 using DDS.Tools.Services;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -29,12 +31,16 @@ internal static class ServiceCollectionExtensions
 	{
 		services.RegisterLoggerService(environment);
 
-		services.AddSingleton<DdsEncoder>();
-		services.AddSingleton<DdsDecoder>();
-		services.AddSingleton<ITodoService, TodoService>();
+		services.TryAddSingleton<DdsEncoder>();
+		services.TryAddSingleton<DdsDecoder>();
+		services.TryAddSingleton<ITodoService, TodoService>();
 
-		services.AddKeyedTransient<IImageModel, PngImageModel>(ImageType.PNG);
-		services.AddKeyedTransient<IImageModel, DdsImageModel>(ImageType.DDS);
+		services.TryAddSingleton<IDirectoryProvider, DirectoryProvider>();
+		services.TryAddSingleton<IFileProvider, FileProvider>();
+		services.TryAddSingleton<IPathProvider, PathProvider>();
+
+		services.TryAddKeyedTransient<IImageModel, PngImageModel>(ImageType.PNG);
+		services.TryAddKeyedTransient<IImageModel, DdsImageModel>(ImageType.DDS);
 
 		return services;
 	}

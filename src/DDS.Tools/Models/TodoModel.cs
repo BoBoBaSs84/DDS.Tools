@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Concurrent;
+using System.Text.Json.Serialization;
 
 namespace DDS.Tools.Models;
 
@@ -43,5 +44,5 @@ public sealed class TodoModel(string fileName, string relativePath, string fullP
 /// <summary>
 /// The todo collection class.
 /// </summary>
-public class TodoCollection : List<TodoModel>
+public class TodoCollection : ConcurrentQueue<TodoModel>
 { }

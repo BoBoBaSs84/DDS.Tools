@@ -17,7 +17,9 @@ namespace DDS.Tools.Commands;
 /// </summary>
 /// <param name="loggerService">The logger service instance to use.</param>
 /// <param name="todoService">The todo service instance to use.</param>
-internal sealed class PngConvertCommand(ILoggerService<DdsConvertCommand> loggerService, ITodoService todoService) : ConvertCommandBase<PngConvertSettings>(todoService)
+/// <param name="serviceProvider">The service provier instance to use.</param>
+internal sealed class PngConvertCommand(ILoggerService<DdsConvertCommand> loggerService, ITodoService todoService, IServiceProvider serviceProvider)
+	: ConvertCommandBase<PngConvertSettings>(todoService, serviceProvider)
 {
 	private const ImageType Type = ImageType.PNG;
 	private readonly ILoggerService<DdsConvertCommand> _loggerService = loggerService;
