@@ -7,6 +7,9 @@ namespace DDS.Tools.Interfaces.Providers;
 /// </summary>
 public interface IFileProvider
 {
+	/// <inheritdoc cref="File.Copy(string, string)"/>
+	void Copy(string sourceFileName, string destFileName);
+
 	/// <inheritdoc cref="File.Exists(string?)"/>
 	bool Exists([NotNullWhen(true)] string? path);
 

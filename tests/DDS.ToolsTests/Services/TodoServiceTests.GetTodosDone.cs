@@ -43,4 +43,20 @@ public sealed partial class TodoServiceTests
 
 		s_todoService.GetTodosDone(todos, settings, imageType);
 	}
+
+	[TestMethod]
+	public void GetTodosDoneSortingTest()
+	{
+		ImageType imageType = ImageType.PNG;
+		PngConvertSettings settings = new()
+		{
+			SourceFolder = TestConstants.PngResourcePath,
+			TargetFolder = TestConstants.PngResultPath + "Sorted",
+			ConvertMode = ConvertModeType.Sorting
+		};
+
+		TodoCollection todos = s_todoService.GetTodos(settings, imageType);
+
+		s_todoService.GetTodosDone(todos, settings, imageType);
+	}
 }

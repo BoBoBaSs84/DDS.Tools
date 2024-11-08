@@ -125,7 +125,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			fileHash: image.Hash
 			);
 
-		todos.Add(todo);
+		todos.Enqueue(todo);
 	}
 
 	private void GetTodoFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, TodoModel todoFromJson)
@@ -141,7 +141,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			fileHash: todoFromJson.FileHash
 			);
 
-		todos.Add(todo);
+		todos.Enqueue(todo);
 	}
 
 	private void GetTodoDone(TodoModel todo, ConvertSettingsBase settings, ImageType imageType)
@@ -157,6 +157,13 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		}
 		else if (settings.ConvertMode.Equals(ConvertModeType.Sorting))
 		{
+			if (_todosDone.Contains(todo.FileHash))
+			{
+				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
+				_todosDuplicateCount++;
+				return;
+			}
+
 			MoveImage(settings, todo, imageType);
 			_todosDone.Add(todo.FileHash);
 			return;
@@ -180,7 +187,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			string newFileName = GetTargetFileName(settings, todo);
 			string newFilePath = _pathProvider.Combine(targetFolder, newFileName);
 
-			File.Move(todo.FullPathName, newFilePath);
+			_fileProvider.Copy(todo.FullPathName, newFilePath);
 		}
 	}
 

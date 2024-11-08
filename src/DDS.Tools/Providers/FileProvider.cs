@@ -10,6 +10,9 @@ namespace DDS.Tools.Providers;
 [ExcludeFromCodeCoverage(Justification = "Wrapper class.")]
 internal sealed class FileProvider : IFileProvider
 {
+	public void Copy(string sourceFileName, string destFileName)
+		=> File.Copy(sourceFileName, destFileName);
+
 	public bool Exists([NotNullWhen(true)] string? path)
 		=> File.Exists(path);
 
