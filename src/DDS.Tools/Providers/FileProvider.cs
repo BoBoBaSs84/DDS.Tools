@@ -10,8 +10,14 @@ namespace DDS.Tools.Providers;
 [ExcludeFromCodeCoverage(Justification = "Wrapper class.")]
 internal sealed class FileProvider : IFileProvider
 {
+	public bool Exists([NotNullWhen(true)] string? path)
+		=> File.Exists(path);
+
 	public void Move(string sourceFileName, string destFileName)
 		=> File.Move(sourceFileName, destFileName);
+
+	public string ReadAllText(string path)
+		=> File.ReadAllText(path);
 
 	public void WriteAllText(string path, string? contents)
 		=> File.WriteAllText(path, contents);

@@ -13,6 +13,9 @@ internal sealed class DirectoryProvider : IDirectoryProvider
 	public DirectoryInfo CreateDirectory(string path)
 		=> Directory.CreateDirectory(path);
 
+	public bool Exists([NotNullWhen(true)] string? path)
+		=> Directory.Exists(path);
+
 	public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
 		=> Directory.GetFiles(path, searchPattern, searchOption);
 }
