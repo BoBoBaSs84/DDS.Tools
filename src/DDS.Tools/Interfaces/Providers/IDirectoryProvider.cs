@@ -7,4 +7,7 @@ public interface IDirectoryProvider
 {
 	/// <inheritdoc cref="Directory.CreateDirectory(string)"/>
 	DirectoryInfo CreateDirectory(string path);
+
+	/// <inheritdoc cref="Directory.GetFiles(string, string, SearchOption)"/>
+	string[] GetFiles(string path, string searchPattern, SearchOption searchOption);
 }
