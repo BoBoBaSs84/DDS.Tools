@@ -13,5 +13,10 @@ public enum ConvertModeType : byte
 	/// <summary>
 	/// The manual mode.
 	/// </summary>
-	Manual = 1
+	Manual = 1,
+
+	/// <summary>
+	/// The sorting mode.
+	/// </summary>
+	Sorting = 2
 }
