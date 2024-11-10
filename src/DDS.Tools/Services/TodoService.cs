@@ -5,6 +5,7 @@ using DDS.Tools.Common;
 using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
 using DDS.Tools.Interfaces.Models;
+using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
 using DDS.Tools.Properties;
@@ -24,8 +25,12 @@ namespace DDS.Tools.Services;
 /// <param name="serviceProvider">The service provider instance to use.</param>
 internal sealed class TodoService(ILoggerService<TodoService> loggerService, IServiceProvider serviceProvider) : ITodoService
 {
+	private readonly IDirectoryProvider _directoryProvider = serviceProvider.GetRequiredService<IDirectoryProvider>();
+	private readonly IFileProvider _fileProvider = serviceProvider.GetRequiredService<IFileProvider>();
+	private readonly IPathProvider _pathProvider = serviceProvider.GetRequiredService<IPathProvider>();
 	private readonly ILoggerService<TodoService> _loggerService = loggerService;
 	private readonly IServiceProvider _serviceProvider = serviceProvider;
+
 	private readonly List<string> _todosDone = [];
 	private int _todosDuplicateCount = 0;
 
@@ -40,7 +45,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		{
 			TodoCollection todos = [];
 
-			string[] files = Directory.GetFiles(settings.SourceFolder, $"*.{imageType}", SearchOption.AllDirectories);
+			string[] files = _directoryProvider.GetFiles(settings.SourceFolder, $"*.{imageType}", SearchOption.AllDirectories);
 
 			if (files.Length.Equals(0))
 				return todos;
@@ -90,8 +95,8 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			if (!jsonExists && settings.ConvertMode.Equals(ConvertModeType.Automatic))
 			{
 				string jsonContent = todos.ToJson();
-				string jsonFilePath = Path.Combine(settings.TargetFolder, Constants.ResultFileName);
-				File.WriteAllText(jsonFilePath, jsonContent);
+				string jsonFilePath = _pathProvider.Combine(settings.TargetFolder, Constants.ResultFileName);
+				_fileProvider.WriteAllText(jsonFilePath, jsonContent);
 			}
 
 			AnsiConsole.MarkupLine($"[green]Todos done:\t{_todosDone.Count}[/]");
@@ -120,13 +125,13 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			fileHash: image.Hash
 			);
 
-		todos.Add(todo);
+		todos.Enqueue(todo);
 	}
 
-	private static void GetTodoFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, TodoModel todoFromJson)
+	private void GetTodoFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, TodoModel todoFromJson)
 	{
-		string newFullPathName =
-			Path.Combine(settings.TargetFolder, todoFromJson.RelativePath, todoFromJson.FileName.Replace(GetTargetFileExtensions(imageType), $"{imageType}"));
+		string newFullPathName = _pathProvider
+			.Combine(settings.TargetFolder, todoFromJson.RelativePath, todoFromJson.FileName.Replace(GetTargetFileExtensions(imageType), $"{imageType}"));
 
 		TodoModel todo = new(
 			fileName: $"{todoFromJson.FileHash}.{GetTargetFileExtensions(imageType)}",
@@ -136,7 +141,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			fileHash: todoFromJson.FileHash
 			);
 
-		todos.Add(todo);
+		todos.Enqueue(todo);
 	}
 
 	private void GetTodoDone(TodoModel todo, ConvertSettingsBase settings, ImageType imageType)
@@ -150,10 +155,40 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 				return;
 			}
 		}
+		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
+		{
+			if (_todosDone.Contains(todo.FileHash))
+			{
+				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
+				_todosDuplicateCount++;
+				return;
+			}
+
+			CopyImage(settings, todo, imageType);
+			_todosDone.Add(todo.FileHash);
+			return;
+		}
 
 		SaveImage(settings, todo, imageType);
 
 		_todosDone.Add(todo.FileHash);
+	}
+
+	private void CopyImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
+	{
+		IImageModel image = _serviceProvider.GetRequiredKeyedService<IImageModel>(imageType);
+		image.Load(todo.FullPathName);
+
+		string targetFolder = PrepareTargetFolder(settings, image, todo);
+		DirectoryInfo directoryInfo = _directoryProvider.CreateDirectory(targetFolder);
+
+		if (directoryInfo.Exists)
+		{
+			string newFileName = GetTargetFileName(settings, todo);
+			string newFilePath = _pathProvider.Combine(targetFolder, newFileName);
+
+			_fileProvider.Copy(todo.FullPathName, newFilePath);
+		}
 	}
 
 	private void SaveImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
@@ -162,21 +197,29 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		image.Load(todo.FullPathName);
 
 		string targetFolder = PrepareTargetFolder(settings, image, todo);
-		_ = Directory.CreateDirectory(targetFolder);
+		DirectoryInfo directoryInfo = _directoryProvider.CreateDirectory(targetFolder);
 
-		string newFileName = $"{GetTargetFileName(settings, todo)}.{GetTargetFileExtensions(imageType)}";
-		string newFilePath = Path.Combine(targetFolder, newFileName);
+		if (directoryInfo.Exists)
+		{
+			string newFileName = $"{GetTargetFileName(settings, todo)}.{GetTargetFileExtensions(imageType)}";
+			string newFilePath = _pathProvider.Combine(targetFolder, newFileName);
 
-		image.Save(newFilePath);
+			image.Save(newFilePath);
+		}
 	}
 
-	private static string PrepareTargetFolder(ConvertSettingsBase settings, IImageModel image, TodoModel todo)
+	private string PrepareTargetFolder(ConvertSettingsBase settings, IImageModel image, TodoModel todo)
 	{
 		string newTargetFolder = todo.TargetFolder;
 
 		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
 		{
-			newTargetFolder = Path.Combine(newTargetFolder, $"{image.Width}");
+			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}");
+			return newTargetFolder;
+		}
+		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
+		{
+			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}x{image.Heigth}");
 			return newTargetFolder;
 		}
 
@@ -184,7 +227,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			return $"{newTargetFolder}{todo.RelativePath}";
 
 		if (settings.SeparateBySize)
-			newTargetFolder = Path.Combine(newTargetFolder, $"{image.Width}");
+			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}");
 
 		return newTargetFolder;
 	}
@@ -195,6 +238,10 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		{
 			FileInfo info = new(todo.FullPathName);
 			return todo.FileName.Replace(info.Extension, string.Empty);
+		}
+		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
+		{
+			return todo.FileName;
 		}
 
 		return todo.FileHash;
