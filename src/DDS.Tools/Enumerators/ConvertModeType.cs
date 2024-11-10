@@ -16,7 +16,7 @@ public enum ConvertModeType : byte
 	Manual = 1,
 
 	/// <summary>
-	/// The sorting mode.
+	/// The grouping mode.
 	/// </summary>
-	Sorting = 2
+	Grouping = 2
 }

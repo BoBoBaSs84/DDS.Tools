@@ -155,7 +155,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 				return;
 			}
 		}
-		else if (settings.ConvertMode.Equals(ConvertModeType.Sorting))
+		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
 		{
 			if (_todosDone.Contains(todo.FileHash))
 			{
@@ -164,7 +164,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 				return;
 			}
 
-			MoveImage(settings, todo, imageType);
+			CopyImage(settings, todo, imageType);
 			_todosDone.Add(todo.FileHash);
 			return;
 		}
@@ -174,7 +174,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 		_todosDone.Add(todo.FileHash);
 	}
 
-	private void MoveImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
+	private void CopyImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
 	{
 		IImageModel image = _serviceProvider.GetRequiredKeyedService<IImageModel>(imageType);
 		image.Load(todo.FullPathName);
@@ -217,7 +217,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}");
 			return newTargetFolder;
 		}
-		else if (settings.ConvertMode.Equals(ConvertModeType.Sorting))
+		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
 		{
 			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}x{image.Heigth}");
 			return newTargetFolder;
@@ -239,7 +239,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			FileInfo info = new(todo.FullPathName);
 			return todo.FileName.Replace(info.Extension, string.Empty);
 		}
-		else if (settings.ConvertMode.Equals(ConvertModeType.Sorting))
+		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
 		{
 			return todo.FileName;
 		}
