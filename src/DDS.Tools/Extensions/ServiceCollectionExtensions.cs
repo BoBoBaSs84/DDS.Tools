@@ -45,7 +45,6 @@ internal static class ServiceCollectionExtensions
 		return services;
 	}
 
-	[SuppressMessage("Interoperability", "CA1416", Justification = "Validate platform compatibility done.")]
 	private static IServiceCollection RegisterLoggerService(this IServiceCollection services, IHostEnvironment environment)
 	{
 		services.TryAddSingleton(typeof(ILoggerService<>), typeof(LoggerService<>));
@@ -53,16 +52,11 @@ internal static class ServiceCollectionExtensions
 		services.AddLogging(configure =>
 		{
 			configure.ClearProviders();
-			configure.AddEventLog(settings => settings.SourceName = environment.ApplicationName);
+			configure.AddConsole();
+			configure.SetMinimumLevel(LogLevel.Warning);
 
 			if (environment.IsDevelopment())
-			{
 				configure.SetMinimumLevel(LogLevel.Debug);
-			}
-			else
-			{
-				configure.SetMinimumLevel(LogLevel.Warning);
-			}
 		});
 
 		return services;
