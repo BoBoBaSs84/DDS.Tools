@@ -8,9 +8,8 @@ namespace DDS.ToolsTests.Services;
 public sealed partial class TodoServiceTests
 {
 	[TestMethod]
-	[ExpectedException(typeof(ServiceException))]
 	public void GetTodosDoneExceptionTest()
-		=> s_todoService.GetTodosDone(null!, null!, ImageType.DDS);
+		=> Assert.ThrowsException<ServiceException>(() => s_todoService.GetTodosDone(null!, null!, ImageType.DDS));
 
 	[TestMethod]
 	public void GetTodosDoneTest()

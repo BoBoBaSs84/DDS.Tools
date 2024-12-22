@@ -8,7 +8,7 @@ namespace DDS.ToolsTests.Services;
 public sealed partial class TodoServiceTests
 {
 	[DataTestMethod]
-	[DynamicData(nameof(GetTodosData))]
+	[DynamicData(nameof(GetTodosData), DynamicDataSourceType.Property)]
 	public void GetTodosTest(string resourcePath, ImageType type, int expected)
 	{
 		DdsConvertSettings settings = new() { SourceFolder = resourcePath, TargetFolder = resourcePath };
@@ -19,7 +19,6 @@ public sealed partial class TodoServiceTests
 	}
 
 	[TestMethod]
-	[ExpectedException(typeof(ServiceException))]
 	public void GetTodosSourceFolderNotFoundTest()
-		=> s_todoService.GetTodos(new DdsConvertSettings() { SourceFolder = @"X:\FooBar" }, ImageType.DDS);
+		=> Assert.ThrowsException<ServiceException>(() => s_todoService.GetTodos(new DdsConvertSettings() { SourceFolder = @"X:\FooBar" }, ImageType.DDS));
 }
