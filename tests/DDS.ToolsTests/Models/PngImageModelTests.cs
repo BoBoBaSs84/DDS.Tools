@@ -12,12 +12,10 @@ public sealed class PngImageModelTests : UnitTestBase
 	private static readonly string NewFilePath = Path.Combine(TestConstants.ResourcePath, "new_32.dds");
 
 	[TestCleanup]
-	public override void TestCleanup()
+	public void TestCleanup()
 	{
 		if (File.Exists(NewFilePath))
 			File.Delete(NewFilePath);
-
-		base.TestCleanup();
 	}
 
 	[TestMethod]
@@ -27,7 +25,6 @@ public sealed class PngImageModelTests : UnitTestBase
 
 		image.Load(FilePath);
 
-		Assert.IsNotNull(image);
 		Assert.AreNotEqual(string.Empty, image.Name);
 		Assert.AreNotEqual(string.Empty, image.Path);
 		Assert.AreNotEqual(0, image.Width);

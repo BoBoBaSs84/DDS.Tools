@@ -7,23 +7,12 @@ namespace DDS.ToolsTests;
 [TestClass]
 public abstract class UnitTestBase
 {
-	private static TestContext? s_context;
-
 	[AssemblyInitialize]
 	public static void AssemblyInitialize(TestContext context)
 	{
-		s_context = context;
 		IHost host = CreateTestHost();
 		ServiceProvider = host.Services;
 	}
-
-	[TestInitialize]
-	public virtual void TestInitialize()
-		=> s_context?.WriteLine($"Initialize {s_context.TestName} ..");
-
-	[TestCleanup]
-	public virtual void TestCleanup()
-		=> s_context?.WriteLine($"Cleanup {s_context.TestName} ..");
 
 	public static IServiceProvider ServiceProvider { get; private set; } = default!;
 
