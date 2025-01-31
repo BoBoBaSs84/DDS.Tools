@@ -14,6 +14,9 @@ updates:
     assignees:
       - "BoBoBaSs84"
     groups:
+      bb84-dependencies:
+        patterns:
+          - "BB84*"
       mstest-dependencies:
         patterns:
           - "MSTest*"
