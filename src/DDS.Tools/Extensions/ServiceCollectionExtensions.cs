@@ -1,4 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿// -----------------------------------------------------------------------------
+// Copyright:	Robert Peter Meyer
+// License:		MIT
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree.
+// -----------------------------------------------------------------------------
+using System.Diagnostics.CodeAnalysis;
 
 using DDS.Tools.Enumerators;
 using DDS.Tools.Interfaces.Models;
