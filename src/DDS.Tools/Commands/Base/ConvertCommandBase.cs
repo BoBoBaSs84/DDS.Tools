@@ -1,4 +1,11 @@
-﻿using DDS.Tools.Common;
+﻿// -----------------------------------------------------------------------------
+// Copyright:	Robert Peter Meyer
+// License:		MIT
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree.
+// -----------------------------------------------------------------------------
+using DDS.Tools.Common;
 using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
 using DDS.Tools.Interfaces.Providers;
