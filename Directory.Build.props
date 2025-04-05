@@ -12,14 +12,13 @@
 	<PropertyGroup>
 		<AllowUnsafeBlocks>False</AllowUnsafeBlocks>
 		<AnalysisLevel>latest</AnalysisLevel>
-		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-		<DebugType>none</DebugType>
 		<Deterministic>True</Deterministic>
 		<EnableNETAnalyzers>True</EnableNETAnalyzers>
-		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-		<GenerateDocumentationFile>false</GenerateDocumentationFile>
-		<GeneratedAssemblyInfoFile>Properties\AssemblyInfo.cs</GeneratedAssemblyInfoFile>
+		<GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+		<DebugType>full</DebugType>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
@@ -34,10 +33,7 @@
 		<Authors>$(Author)</Authors>
 		<Company>https://github.com/$(Author)</Company>
 		<Copyright>Copyright © $(VersionMajor) $(Author)</Copyright>
-		<Description>
-			This is a simple DDS and PNG tool set that converts DDS images to PNG images and vice versa on a large scale.
-			Has options for duplicate detection and sorting.
-		</Description>
+		<Description> This is a simple DDS and PNG tool set that converts DDS images to PNG images and vice versa on a large scale. It has options for duplicate detection and sorting.</Description>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/$(Author)/$(Product)</PackageProjectUrl>
@@ -49,9 +45,9 @@
 		<Title>$(AssemblyName)</Title>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="$(Configuration.Equals('Debug'))">
-		<DebugType>full</DebugType>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<PropertyGroup Condition="$(Configuration.Equals('Release'))">
+		<DebugType>none</DebugType>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
@@ -68,10 +64,6 @@
 		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="Properties\" />
 	</ItemGroup>
 
 </Project>
