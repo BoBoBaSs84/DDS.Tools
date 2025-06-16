@@ -3,12 +3,12 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="BB84.Extensions" Version="2.13.530" />
+    <PackageVersion Include="BB84.Extensions" Version="2.14.613" />
     <PackageVersion Include="BCnEncoder.Net" Version="2.2.1" />
     <PackageVersion Include="BCnEncoder.Net.ImageSharp" Version="1.1.2" />
-    <PackageVersion Include="MSTest" Version="3.9.1" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
-    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.9" />
+    <PackageVersion Include="MSTest" Version="3.9.2" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
+    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.10" />
     <PackageVersion Include="Spectre.Console" Version="0.50.0" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.50.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
