@@ -18,12 +18,13 @@ namespace DDS.Tools.Settings;
 /// <summary>
 /// The dds convert settings class.
 /// </summary>
-internal sealed class DdsConvertSettings : ConvertSettingsBase
+public sealed class DdsConvertSettings : ConvertSettingsBase
 {
 	/// <summary>
 	/// The compression level in which the images should be saved.
 	/// </summary>
-	[Description("The compression level in which the images should be saved.")]
+	[Description($"The compression level in which the images should be saved.\n" +
+		$"Default is {nameof(PngCompressionLevel.DefaultCompression)}.")]
 	[CommandOption("-c|--compression")]
-	public PngCompressionLevel Compression { get; set; } = PngCompressionLevel.NoCompression;
+	public PngCompressionLevel Compression { get; set; } = PngCompressionLevel.DefaultCompression;
 }
