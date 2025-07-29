@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
+using DDS.Tools.Settings.Base;
+
 namespace DDS.Tools.Interfaces.Models;
 
 /// <summary>
@@ -52,5 +54,6 @@ public interface IImageModel
 	/// Saves the image to the provided designation.
 	/// </summary>
 	/// <param name="filePath">The designation to save the image file to.</param>
-	abstract void Save(string filePath);
+	/// <param name="settings">The settings to use for saving the image.</param>
+	abstract void Save(string filePath, ConvertSettingsBase settings);
 }

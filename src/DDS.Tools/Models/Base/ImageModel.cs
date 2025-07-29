@@ -6,11 +6,12 @@
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
 using DDS.Tools.Interfaces.Models;
+using DDS.Tools.Settings.Base;
 
 namespace DDS.Tools.Models.Base;
 
 /// <summary>
-/// The image file class.
+/// The base class for image models.
 /// </summary>
 internal abstract class ImageModel : IImageModel
 {
@@ -31,5 +32,5 @@ internal abstract class ImageModel : IImageModel
 	public abstract void Load(string filePath);
 
 	/// <inheritdoc/>
-	public abstract void Save(string filePath);
+	public abstract void Save(string filePath, ConvertSettingsBase settings);
 }

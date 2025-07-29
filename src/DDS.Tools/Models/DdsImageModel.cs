@@ -12,6 +12,8 @@ using BCnEncoder.ImageSharp;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models.Base;
+using DDS.Tools.Settings;
+using DDS.Tools.Settings.Base;
 
 using Microsoft.Extensions.Logging;
 
@@ -24,13 +26,13 @@ using Spectre.Console;
 namespace DDS.Tools.Models;
 
 /// <summary>
-/// The dds image class.
+/// Represents a model for DDS image files.
 /// </summary>
-/// <param name="ddsDecoder"></param>
-/// <param name="logger"></param>
-internal sealed class DdsImageModel(DdsDecoder ddsDecoder, ILoggerService<DdsImageModel> logger) : ImageModel, IImageModel
+/// <param name="decoder">The decoder used to decode DDS files into images.</param>
+/// <param name="logger">The logger service for logging operations and exceptions.</param>
+internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageModel> logger) : ImageModel, IImageModel
 {
-	private readonly DdsDecoder _ddsDecoder = ddsDecoder;
+	private readonly DdsDecoder _ddsDecoder = decoder;
 	private readonly ILoggerService<DdsImageModel> _logger = logger;
 	private Image<Rgba32>? _image;
 
@@ -67,17 +69,20 @@ internal sealed class DdsImageModel(DdsDecoder ddsDecoder, ILoggerService<DdsIma
 	}
 
 	/// <inheritdoc/>
-	public override void Save(string filePath)
+	public override void Save(string filePath, ConvertSettingsBase settings)
 	{
 		try
 		{
+			if (settings is not DdsConvertSettings ddsSettings)
+				throw new ArgumentException($"Invalid settings type. Expected {nameof(DdsConvertSettings)}.");
+
 			FileInfo fileInfo = new(filePath);
 
 			if (fileInfo.Exists)
 				throw new ArgumentException($"Already exists: '{filePath}'");
 
 			using FileStream fileStream = File.OpenWrite(filePath);
-			PngEncoder pngEncoder = new() { CompressionLevel = PngCompressionLevel.NoCompression };
+			PngEncoder pngEncoder = new() { CompressionLevel = ddsSettings.Compression };
 			_image.SaveAsPng(fileStream, pngEncoder);
 		}
 		catch (Exception ex)
