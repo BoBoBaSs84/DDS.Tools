@@ -211,7 +211,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 			string newFileName = $"{GetTargetFileName(settings, todo)}.{GetTargetFileExtensions(imageType)}";
 			string newFilePath = _pathProvider.Combine(targetFolder, newFileName);
 
-			image.Save(newFilePath);
+			image.Save(newFilePath, settings);
 		}
 	}
 
