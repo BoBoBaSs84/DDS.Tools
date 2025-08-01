@@ -16,7 +16,7 @@ namespace DDS.Tools.Settings.Base;
 /// <summary>
 /// The convert settings base class
 /// </summary>
-internal abstract class ConvertSettingsBase : CommandSettings
+public abstract class ConvertSettingsBase : CommandSettings
 {
 	/// <summary>
 	/// The source folder of the images.

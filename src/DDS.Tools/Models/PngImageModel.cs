@@ -14,6 +14,8 @@ using BCnEncoder.Shared.ImageFiles;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models.Base;
+using DDS.Tools.Settings;
+using DDS.Tools.Settings.Base;
 
 using Microsoft.Extensions.Logging;
 
@@ -25,8 +27,10 @@ using Spectre.Console;
 namespace DDS.Tools.Models;
 
 /// <summary>
-/// The png image class.
+/// Represents a model for PNG image files.
 /// </summary>
+/// <param name="encoder">The encoder used to encode images into DDS format.</param>
+/// <param name="logger">The logger service for logging operations and exceptions.</param>
 internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageModel> logger) : ImageModel, IImageModel
 {
 	private readonly DdsEncoder _ddsEncoder = encoder;
@@ -66,10 +70,13 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 	}
 
 	/// <inheritdoc/>
-	public override void Save(string filePath)
+	public override void Save(string filePath, ConvertSettingsBase settings)
 	{
 		try
 		{
+			if (settings is not PngConvertSettings pngSettings)
+				throw new ArgumentException($"Invalid settings type. Expected {nameof(PngConvertSettings)}.");
+
 			FileInfo fileInfo = new(filePath);
 
 			if (fileInfo.Exists)
@@ -77,6 +84,8 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 
 			if (_image is not null && HasTransparency(_image))
 				_ddsEncoder.OutputOptions.Format = CompressionFormat.Bc3;
+
+			_ddsEncoder.OutputOptions.Quality = pngSettings.Compression;
 
 			DdsFile ddsFile = _ddsEncoder.EncodeToDds(_image);
 			using FileStream fileStream = File.OpenWrite(filePath);

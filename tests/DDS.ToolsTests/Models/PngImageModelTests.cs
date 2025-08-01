@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------------
 using DDS.Tools.Enumerators;
 using DDS.Tools.Interfaces.Models;
+using DDS.Tools.Settings;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,10 +51,15 @@ public sealed class PngImageModelTests : UnitTestBase
 	[TestMethod]
 	public void SaveTest()
 	{
+		PngConvertSettings settings = new()
+		{
+			SourceFolder = TestConstants.PngResourcePath,
+			TargetFolder = TestConstants.ResourcePath,
+		};
 		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.PNG);
 		image.Load(FilePath);
 
-		image.Save(NewFilePath);
+		image.Save(NewFilePath, settings);
 
 		Assert.IsTrue(File.Exists(NewFilePath));
 	}
@@ -61,9 +67,14 @@ public sealed class PngImageModelTests : UnitTestBase
 	[TestMethod]
 	public void SaveExceptionTest()
 	{
+		PngConvertSettings settings = new()
+		{
+			SourceFolder = TestConstants.PngResourcePath,
+			TargetFolder = TestConstants.ResourcePath,
+		};
 		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.PNG);
 		image.Load(FilePath);
 
-		image.Save(FilePath);
+		image.Save(FilePath, settings);
 	}
 }
