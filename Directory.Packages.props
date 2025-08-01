@@ -8,7 +8,7 @@
     <PackageVersion Include="BCnEncoder.Net.ImageSharp" Version="1.1.2" />
     <PackageVersion Include="MSTest" Version="3.10.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
-    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.10" />
+    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.11" />
     <PackageVersion Include="Spectre.Console" Version="0.50.0" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.50.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
