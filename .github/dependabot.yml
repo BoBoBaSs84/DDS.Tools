@@ -11,8 +11,6 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "03:00"
-    assignees:
-      - "BoBoBaSs84"
     groups:
       bb84-dependencies:
         patterns:
@@ -30,5 +28,3 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "03:00"
-    assignees:
-      - "BoBoBaSs84"
