@@ -8,9 +8,11 @@ updates:
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "03:00"
+      interval: "daily"
+      cooldown:
+      - semver-major: 30
+      - semver-minor: 5
+      - semver-patch: 1
     groups:
       bb84-dependencies:
         patterns:
@@ -26,5 +28,3 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "03:00"
