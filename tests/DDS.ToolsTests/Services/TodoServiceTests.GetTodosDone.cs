@@ -16,7 +16,7 @@ public sealed partial class TodoServiceTests
 {
 	[TestMethod]
 	public void GetTodosDoneExceptionTest()
-		=> Assert.ThrowsException<ServiceException>(() => s_todoService.GetTodosDone(null!, null!, ImageType.DDS));
+		=> Assert.Throws<ServiceException>(() => s_todoService.GetTodosDone(null!, null!, ImageType.DDS));
 
 	[TestMethod]
 	public void GetTodosDoneTest()
