@@ -23,17 +23,16 @@ public sealed partial class TodoServiceTests
 
 		TodoCollection todos = s_todoService.GetTodos(settings, ImageType.DDS, JsonFileContent);
 
-		Assert.AreEqual(1, todos.Count);
+		Assert.HasCount(1, todos);
 		Assert.AreEqual("3B6242065CC51D558E45CD5868A18A36.PNG", todos.First().FileName);
 		Assert.AreEqual("32.dds", todos.First().FullPathName);
 	}
 
 	[TestMethod]
-	[ExpectedException(typeof(ServiceException))]
 	public void GetTodosFromJsonExceptionTest()
 	{
 		DdsConvertSettings settings = new() { SourceFolder = @"X:\FooBar" };
 
-		_ = s_todoService.GetTodos(settings, ImageType.PNG, string.Empty);
+		Assert.Throws<ServiceException>(() => s_todoService.GetTodos(settings, ImageType.PNG, string.Empty));
 	}
 }
