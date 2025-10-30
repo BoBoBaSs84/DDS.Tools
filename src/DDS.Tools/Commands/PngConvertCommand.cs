@@ -35,7 +35,7 @@ internal sealed class PngConvertCommand(ILoggerService<DdsConvertCommand> logger
 		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
 
 	/// <inheritdoc/>
-	public override int Execute([NotNull] CommandContext context, [NotNull] PngConvertSettings settings)
+	public override int Execute([NotNull] CommandContext context, [NotNull] PngConvertSettings settings, CancellationToken cancellationToken)
 	{
 		try
 		{

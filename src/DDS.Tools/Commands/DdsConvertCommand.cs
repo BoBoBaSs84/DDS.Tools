@@ -35,7 +35,7 @@ internal sealed class DdsConvertCommand(ILoggerService<DdsConvertCommand> logger
 		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
 
 	/// <inheritdoc/>
-	public override int Execute([NotNull] CommandContext context, [NotNull] DdsConvertSettings settings)
+	public override int Execute([NotNull] CommandContext context, [NotNull] DdsConvertSettings settings, CancellationToken cancellationToken)
 	{
 		try
 		{
