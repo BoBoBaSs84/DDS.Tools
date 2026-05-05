@@ -5,14 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// Copyright:	Robert Peter Meyer
-// License:		MIT
-//
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
-// -----------------------------------------------------------------------------
 using DDS.Tools.Models;
 
 namespace DDS.Tools.Tests.Models;
