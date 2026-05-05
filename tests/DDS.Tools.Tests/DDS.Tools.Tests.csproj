@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<IsTestProject>true</IsTestProject>
-		<IsPackable>false</IsPackable>
+		<IsTestProject>True</IsTestProject>
+		<IsPackable>False</IsPackable>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="Moq" />
 		<PackageReference Include="MSTest" />
 	</ItemGroup>
 	<ItemGroup>

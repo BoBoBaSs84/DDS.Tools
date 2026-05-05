@@ -15,6 +15,6 @@
     <Project Path="src/DDS.Tools/DDS.Tools.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/DDS.ToolsTests/DDS.ToolsTests.csproj" />
+    <Project Path="tests/DDS.Tools.Tests/DDS.Tools.Tests.csproj" />
   </Folder>
 </Solution>

@@ -5,24 +5,25 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
-using BCnEncoder.Encoder;
-
 using DDS.Tools.Enumerators;
 using DDS.Tools.Settings;
+using DDS.Tools.Tests;
 
-namespace DDS.ToolsTests.Settings;
+using SixLabors.ImageSharp.Formats.Png;
+
+namespace DDS.Tools.Tests.Settings;
 
 [TestClass]
-public sealed class PngConvertSettingsTests : UnitTestBase
+public sealed class DdsConvertSettingsTests : UnitTestBase
 {
-	[TestMethod]
-	public void PngConvertSettingsTest()
+	[TestMethod()]
+	public void DdsConvertSettingsTest()
 	{
-		PngConvertSettings settings = new()
+		DdsConvertSettings settings = new()
 		{
 			SourceFolder = TestConstants.ResourcePath,
 			TargetFolder = TestConstants.ResourcePath,
-			Compression = CompressionQuality.Fast,
+			Compression = PngCompressionLevel.BestCompression,
 			ConvertMode = ConvertModeType.Manual,
 			RetainStructure = false,
 			SeparateBySize = true,
@@ -30,7 +31,7 @@ public sealed class PngConvertSettingsTests : UnitTestBase
 
 		Assert.AreEqual(TestConstants.ResourcePath, settings.SourceFolder);
 		Assert.AreEqual(TestConstants.ResourcePath, settings.TargetFolder);
-		Assert.AreEqual(CompressionQuality.Fast, settings.Compression);
+		Assert.AreEqual(PngCompressionLevel.BestCompression, settings.Compression);
 		Assert.AreEqual(ConvertModeType.Manual, settings.ConvertMode);
 		Assert.IsFalse(settings.RetainStructure);
 		Assert.IsTrue(settings.SeparateBySize);

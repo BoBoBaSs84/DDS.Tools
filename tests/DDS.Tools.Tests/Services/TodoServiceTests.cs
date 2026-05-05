@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------------
 using DDS.Tools.Enumerators;
 using DDS.Tools.Interfaces.Services;
+using DDS.Tools.Tests;
 
 using Microsoft.Extensions.DependencyInjection;
 
