@@ -1,5 +1,4 @@
 <Project>
-
 	<PropertyGroup>
 		<VersionMajor>$([System.DateTime]::UtcNow.Year)</VersionMajor>
 		<VersionMinor>$([System.DateTime]::UtcNow.Month)</VersionMinor>
@@ -8,7 +7,6 @@
 		<VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionPatch).$(VersionRevision)</VersionPrefix>
 		<VersionSuffix Condition="$(Configuration.Equals('Debug'))">Development</VersionSuffix>
 	</PropertyGroup>
-
 	<PropertyGroup>
 		<AllowUnsafeBlocks>False</AllowUnsafeBlocks>
 		<AnalysisLevel>latest</AnalysisLevel>
@@ -27,7 +25,6 @@
 		<RunAnalyzersDuringLiveAnalysis>True</RunAnalyzersDuringLiveAnalysis>
 		<TargetFramework>net8.0</TargetFramework>
 	</PropertyGroup>
-
 	<PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('Tests'))">
 		<Author>BoBoBaSs84</Author>
 		<Authors>$(Author)</Authors>
@@ -44,24 +41,19 @@
 		<RepositoryUrl>https://github.com/$(Author)/$(Product)</RepositoryUrl>
 		<Title>$(AssemblyName)</Title>
 	</PropertyGroup>
-
 	<PropertyGroup Condition="$(Configuration.Equals('Release'))">
 		<DebugType>none</DebugType>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 	</PropertyGroup>
-
 	<PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
 	</PropertyGroup>
-
 	<ItemGroup Condition="!$(MSBuildProjectName.EndsWith('Tests'))">
 		<InternalsVisibleTo Include="$(AssemblyName)Tests" />
 	</ItemGroup>
-
 	<ItemGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
 		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 	</ItemGroup>
-
 </Project>

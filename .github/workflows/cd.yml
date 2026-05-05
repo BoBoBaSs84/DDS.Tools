@@ -1,0 +1,86 @@
+name: Continuous Deployment
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: Build, Test & Publish
+    runs-on: ubuntu-latest
+
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      SOLUTION: DDS.Tools.slnx
+      CONFIGURATION: Release
+      RUNTIME: win-x64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          tagName="${GITHUB_REF#refs/tags/v}"
+          echo "VERSION=$tagName" >> $GITHUB_OUTPUT
+          echo "Extracted version: $tagName"
+
+      - name: Restore dependencies
+        run: dotnet restore ${SOLUTION}
+
+      - name: Build solution
+        run: >
+          dotnet build ${SOLUTION}
+          --configuration ${CONFIGURATION}
+          --no-restore
+          -p:VersionPrefix=${{ steps.version.outputs.VERSION }}
+          -p:VersionSuffix=
+          -p:FileVersion=${{ steps.version.outputs.VERSION }}
+
+      - name: Run tests
+        run: dotnet test ${SOLUTION} --configuration ${CONFIGURATION} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+
+      - name: Publish application
+        run: >
+          dotnet publish src/DDS.Tools/DDS.Tools.csproj
+          --configuration ${CONFIGURATION}
+          --runtime ${RUNTIME}
+          --output ./publish
+          -p:VersionPrefix=${{ steps.version.outputs.VERSION }}
+          -p:VersionSuffix=
+          -p:FileVersion=${{ steps.version.outputs.VERSION }}
+
+      - name: Archive published output
+        run: |
+          mkdir -p ./artifacts
+          zip -j ./artifacts/DDS.Tools.${{ env.RUNTIME }}.${{ steps.version.outputs.VERSION }}.zip ./publish/*
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: DDS.Tools
+          path: ./artifacts/DDS.Tools.${{ env.RUNTIME }}.${{ steps.version.outputs.VERSION }}.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.VERSION }}
+          generate_release_notes: true
+          files: ./artifacts/DDS.Tools.${{ env.RUNTIME }}.${{ steps.version.outputs.VERSION }}.zip
