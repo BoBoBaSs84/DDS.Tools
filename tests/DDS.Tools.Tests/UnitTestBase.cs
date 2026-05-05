@@ -9,7 +9,7 @@ using DDS.Tools.Extensions;
 
 using Microsoft.Extensions.Hosting;
 
-namespace DDS.ToolsTests;
+namespace DDS.Tools.Tests;
 
 [TestClass]
 public abstract class UnitTestBase

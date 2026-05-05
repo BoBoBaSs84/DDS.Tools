@@ -8,10 +8,11 @@
 using DDS.Tools.Enumerators;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Settings;
+using DDS.Tools.Tests;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DDS.ToolsTests.Models;
+namespace DDS.Tools.Tests.Models;
 
 [TestClass()]
 public class DdsImageModelTests : UnitTestBase
