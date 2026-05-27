@@ -80,6 +80,36 @@ public sealed class DdsConvertCommandTests
 		todoServiceMock.Verify(x => x.GetTodosDone(It.IsAny<TodoCollection>(), It.IsAny<ConvertSettingsBase>(), It.IsAny<ImageType>(), It.IsAny<bool>()), Times.Never);
 	}
 
+	[TestMethod]
+	public void DdsConvertCommandExecuteWhenTodoServiceThrowsLogsExceptionAndReturnsOne()
+	{
+		Mock<ILoggerService<DdsConvertCommand>> loggerMock = new();
+		Mock<ITodoService> todoServiceMock = new();
+		Mock<IDirectoryProvider> directoryProviderMock = new();
+		Mock<IFileProvider> fileProviderMock = new();
+		Mock<IPathProvider> pathProviderMock = new();
+
+		DdsConvertSettings settings = new()
+		{
+			SourceFolder = @"X:\Source",
+			TargetFolder = @"X:\Target"
+		};
+
+		directoryProviderMock.Setup(x => x.Exists(settings.SourceFolder)).Returns(true);
+		pathProviderMock.Setup(x => x.Combine(settings.SourceFolder, "Result.json")).Returns(@"X:\Source\Result.json");
+		fileProviderMock.Setup(x => x.Exists(@"X:\Source\Result.json")).Returns(false);
+		todoServiceMock.Setup(x => x.GetTodos(settings, ImageType.DDS)).Throws(new InvalidOperationException("boom"));
+
+		DdsConvertCommand command = new(loggerMock.Object, todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
+
+		int result = InvokeExecute(command, settings);
+
+		Assert.AreEqual(1, result);
+		loggerMock.Verify(x => x.Log(It.IsAny<Action<Microsoft.Extensions.Logging.ILogger, Exception?>>(), It.IsAny<Exception?>()), Times.Once);
+		todoServiceMock.Verify(x => x.GetTodos(settings, ImageType.DDS), Times.Once);
+		todoServiceMock.Verify(x => x.GetTodosDone(It.IsAny<TodoCollection>(), It.IsAny<ConvertSettingsBase>(), It.IsAny<ImageType>(), It.IsAny<bool>()), Times.Never);
+	}
+
 	private static int InvokeExecute(DdsConvertCommand command, DdsConvertSettings settings)
 	{
 		MethodInfo method = typeof(DdsConvertCommand).GetMethod("Execute", BindingFlags.Instance | BindingFlags.NonPublic)!;
@@ -93,5 +123,4 @@ public sealed class DdsConvertCommandTests
 		todos.Enqueue(new TodoModel("32.dds", string.Empty, @"X:\Source\32.dds", @"X:\Target", "HASH-1"));
 		return todos;
 	}
-
 }

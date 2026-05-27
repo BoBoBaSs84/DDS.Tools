@@ -13,9 +13,6 @@ using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Settings;
 
-using Microsoft.Extensions.Logging;
-
-using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace DDS.Tools.Commands;
@@ -34,28 +31,11 @@ internal sealed class DdsConvertCommand(
 	IDirectoryProvider directoryProvider,
 	IFileProvider fileProvider,
 	IPathProvider pathProvider)
-	: ConvertCommandBase<DdsConvertSettings>(todoService, directoryProvider, fileProvider, pathProvider)
+	: ConvertCommandBase<DdsConvertSettings, DdsConvertCommand>(loggerService, todoService, directoryProvider, fileProvider, pathProvider)
 {
 	private const ImageType Type = ImageType.DDS;
-	private readonly ILoggerService<DdsConvertCommand> _loggerService = loggerService;
-
-	private static readonly Action<ILogger, Exception?> LogException =
-		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
 
 	/// <inheritdoc/>
 	protected override int Execute([NotNull] CommandContext context, [NotNull] DdsConvertSettings settings, CancellationToken cancellationToken)
-	{
-		try
-		{
-			return AnsiConsole.Status()
-				.Spinner(Spinner.Known.Line)
-				.Start("Processing..", action => Action(settings, Type));
-		}
-		catch (Exception ex)
-		{
-			_loggerService.Log(LogException, ex);
-			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
-			return 1;
-		}
-	}
+	 => ExecuteCommand(settings, Type);
 }

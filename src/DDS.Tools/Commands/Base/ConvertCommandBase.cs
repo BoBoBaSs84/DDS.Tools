@@ -13,6 +13,8 @@ using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
 using DDS.Tools.Settings.Base;
 
+using Microsoft.Extensions.Logging;
+
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -22,19 +24,43 @@ namespace DDS.Tools.Commands.Base;
 /// The convert command base class.
 /// </summary>
 /// <inheritdoc/>
+/// <param name="loggerService">The logger service instance to use.</param>
 /// <param name="todoService">The todo service instance to use.</param>
 /// <param name="directoryProvider">The directory provider instance to use.</param>
 /// <param name="fileProvider">The file provider instance to use.</param>
 /// <param name="pathProvider">The path provider instance to use.</param>
-internal abstract class ConvertCommandBase<TSettings>(
+internal abstract class ConvertCommandBase<TSettings, TCommand>(
+	ILoggerService<TCommand> loggerService,
 	ITodoService todoService,
 	IDirectoryProvider directoryProvider,
 	IFileProvider fileProvider,
-	IPathProvider pathProvider) : Command<TSettings> where TSettings : CommandSettings
+	IPathProvider pathProvider) : Command<TSettings>
+	where TSettings : CommandSettings
+	where TCommand : class
 {
+	private readonly ILoggerService<TCommand> _loggerService = loggerService;
 	private readonly IDirectoryProvider _directoryProvider = directoryProvider;
 	private readonly IFileProvider _fileProvider = fileProvider;
 	private readonly IPathProvider _pathProvider = pathProvider;
+
+	private static readonly Action<ILogger, Exception?> LogException =
+		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
+
+	protected int ExecuteCommand(ConvertSettingsBase settings, ImageType imageType)
+	{
+		try
+		{
+			return AnsiConsole.Status()
+				.Spinner(Spinner.Known.Line)
+				.Start("Processing..", action => Action(settings, imageType));
+		}
+		catch (Exception ex)
+		{
+			_loggerService.Log(LogException, ex);
+			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
+			return 1;
+		}
+	}
 
 	protected int Action(ConvertSettingsBase settings, ImageType imageType)
 	{
