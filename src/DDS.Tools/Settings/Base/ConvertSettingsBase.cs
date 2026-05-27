@@ -29,7 +29,7 @@ public abstract class ConvertSettingsBase : CommandSettings
 	/// The target folder of the images.
 	/// </summary>
 	[Description(@"The target folder of the images.")]
-	[CommandArgument(0, "<TargetFolder>")]
+  [CommandArgument(1, "<TargetFolder>")]
 	public string TargetFolder { get; set; } = string.Empty;
 
 	/// <summary>
