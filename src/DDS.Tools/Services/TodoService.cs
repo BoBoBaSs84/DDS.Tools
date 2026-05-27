@@ -45,9 +45,6 @@ internal sealed class TodoService(
 	private readonly Func<ImageType, IImageModel> _imageModelFactory = imageModelFactory;
 	private readonly ILoggerService<TodoService> _loggerService = loggerService;
 
-	private readonly List<string> _todosDone = [];
-	private int _todosDuplicateCount = 0;
-
 	private static readonly Action<ILogger, Exception?> LogException =
 		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
 
@@ -64,7 +61,8 @@ internal sealed class TodoService(
 			if (files.Length.Equals(0))
 				return todos;
 
-			files.AsParallel().ForEach(file => GetTodo(todos, settings, imageType, file));
+			foreach (string file in files)
+				GetTodo(todos, settings, imageType, file);
 
 			return todos;
 		}
@@ -86,7 +84,8 @@ internal sealed class TodoService(
 
 			TodoCollection todosFromJson = jsonFileContent.FromJson<TodoCollection>();
 
-			todosFromJson.AsParallel().ForEach(tfj => GetTodoFromJson(todos, settings, imageType, tfj));
+			foreach (TodoModel todoFromJson in todosFromJson)
+				GetTodoFromJson(todos, settings, imageType, todoFromJson);
 
 			return todos;
 		}
@@ -104,7 +103,11 @@ internal sealed class TodoService(
 	{
 		try
 		{
-			todos.AsParallel().ForEach(t => GetTodoDone(t, settings, imageType));
+			HashSet<string> todosDone = [];
+			int todosDuplicateCount = 0;
+
+			foreach (TodoModel todo in todos)
+				GetTodoDone(todo, settings, imageType, todosDone, ref todosDuplicateCount);
 
 			if (!jsonExists && settings.ConvertMode.Equals(ConvertModeType.Automatic))
 			{
@@ -113,8 +116,8 @@ internal sealed class TodoService(
 				_fileProvider.WriteAllText(jsonFilePath, jsonContent);
 			}
 
-			AnsiConsole.MarkupLine($"[green]Todos done:\t{_todosDone.Count}[/]");
-			AnsiConsole.MarkupLine($"[yellow]Duplicates:\t{_todosDuplicateCount}[/]");
+			AnsiConsole.MarkupLine($"[green]Todos done:\t{todosDone.Count}[/]");
+			AnsiConsole.MarkupLine($"[yellow]Duplicates:\t{todosDuplicateCount}[/]");
 		}
 		catch (Exception ex)
 		{
@@ -158,34 +161,34 @@ internal sealed class TodoService(
 		todos.Enqueue(todo);
 	}
 
-	private void GetTodoDone(TodoModel todo, ConvertSettingsBase settings, ImageType imageType)
+	private void GetTodoDone(TodoModel todo, ConvertSettingsBase settings, ImageType imageType, ISet<string> todosDone, ref int todosDuplicateCount)
 	{
 		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
 		{
-			if (_todosDone.Contains(todo.FileHash))
+			if (todosDone.Contains(todo.FileHash))
 			{
 				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
-				_todosDuplicateCount++;
+				todosDuplicateCount++;
 				return;
 			}
 		}
 		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
 		{
-			if (_todosDone.Contains(todo.FileHash))
+			if (todosDone.Contains(todo.FileHash))
 			{
 				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
-				_todosDuplicateCount++;
+				todosDuplicateCount++;
 				return;
 			}
 
 			CopyImage(settings, todo, imageType);
-			_todosDone.Add(todo.FileHash);
+			todosDone.Add(todo.FileHash);
 			return;
 		}
 
 		SaveImage(settings, todo, imageType);
 
-		_todosDone.Add(todo.FileHash);
+		todosDone.Add(todo.FileHash);
 	}
 
 	private void CopyImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
@@ -261,9 +264,11 @@ internal sealed class TodoService(
 		return todo.FileHash;
 	}
 
-	private static string GetTargetFileExtensions(ImageType imageType) => imageType switch
-	{
-		ImageType.DDS => $"{ImageType.PNG}",
-		_ => $"{ImageType.DDS}"
-	};
+	private static string GetTargetFileExtensions(ImageType imageType)
+		=> imageType switch
+		{
+			ImageType.DDS => $"{ImageType.PNG}",
+			ImageType.PNG => $"{ImageType.DDS}",
+			_ => throw new ArgumentOutOfRangeException(nameof(imageType), imageType, null)
+		};
 }
