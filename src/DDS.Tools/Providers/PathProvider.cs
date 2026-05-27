@@ -7,6 +7,8 @@
 // -----------------------------------------------------------------------------
 using System.Diagnostics.CodeAnalysis;
 
+using BB84.SourceGenerators.Attributes;
+
 using DDS.Tools.Interfaces.Providers;
 
 namespace DDS.Tools.Providers;
@@ -15,11 +17,6 @@ namespace DDS.Tools.Providers;
 /// The path provider class.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "Wrapper class.")]
-internal sealed class PathProvider : IPathProvider
-{
-	public string Combine(string path1, string path2)
-		=> Path.Combine(path1, path2);
-
-	public string Combine(string path1, string path2, string path3)
-		=> Path.Combine(path1, path2, path3);
-}
+[GenerateAbstraction(typeof(Path), typeof(IPathProvider), typeof(PathProvider))]
+internal sealed partial class PathProvider : IPathProvider
+{ }

@@ -1,9 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
+		<EmitCompilerGeneratedFiles>True</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="BB84.Extensions" />
+		<PackageReference Include="BB84.SourceGenerators">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="BCnEncoder.Net" />
 		<PackageReference Include="BCnEncoder.Net.ImageSharp" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
