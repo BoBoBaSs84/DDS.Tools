@@ -5,10 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
-namespace DDS.Tools.Interfaces.Providers;
+using BB84.SourceGenerators.Attributes;
 
-/// <summary>
-/// The interface for the file provider.
-/// </summary>
-public partial interface IFileProvider
+namespace DDS.Tools.Common;
+
+[GenerateAssemblyInformation]
+internal static partial class AssemblyInformation
 { }

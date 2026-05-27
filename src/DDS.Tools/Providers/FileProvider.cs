@@ -7,6 +7,8 @@
 // -----------------------------------------------------------------------------
 using System.Diagnostics.CodeAnalysis;
 
+using BB84.SourceGenerators.Attributes;
+
 using DDS.Tools.Interfaces.Providers;
 
 namespace DDS.Tools.Providers;
@@ -15,20 +17,6 @@ namespace DDS.Tools.Providers;
 /// The file provider class.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "Wrapper class.")]
-internal sealed class FileProvider : IFileProvider
-{
-	public void Copy(string sourceFileName, string destFileName)
-		=> File.Copy(sourceFileName, destFileName);
-
-	public bool Exists([NotNullWhen(true)] string? path)
-		=> File.Exists(path);
-
-	public void Move(string sourceFileName, string destFileName)
-		=> File.Move(sourceFileName, destFileName);
-
-	public string ReadAllText(string path)
-		=> File.ReadAllText(path);
-
-	public void WriteAllText(string path, string? contents)
-		=> File.WriteAllText(path, contents);
-}
+[GenerateAbstraction(typeof(File), typeof(IFileProvider), typeof(FileProvider))]
+internal sealed partial class FileProvider : IFileProvider
+{ }
