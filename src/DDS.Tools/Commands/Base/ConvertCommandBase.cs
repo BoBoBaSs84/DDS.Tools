@@ -13,8 +13,6 @@ using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
 using DDS.Tools.Settings.Base;
 
-using Microsoft.Extensions.DependencyInjection;
-
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -25,12 +23,18 @@ namespace DDS.Tools.Commands.Base;
 /// </summary>
 /// <inheritdoc/>
 /// <param name="todoService">The todo service instance to use.</param>
-/// <param name="serviceProvider">The service provier instance to use.</param>
-internal abstract class ConvertCommandBase<TSettings>(ITodoService todoService, IServiceProvider serviceProvider) : Command<TSettings> where TSettings : CommandSettings
+/// <param name="directoryProvider">The directory provider instance to use.</param>
+/// <param name="fileProvider">The file provider instance to use.</param>
+/// <param name="pathProvider">The path provider instance to use.</param>
+internal abstract class ConvertCommandBase<TSettings>(
+	ITodoService todoService,
+	IDirectoryProvider directoryProvider,
+	IFileProvider fileProvider,
+	IPathProvider pathProvider) : Command<TSettings> where TSettings : CommandSettings
 {
-	private readonly IDirectoryProvider _directoryProvider = serviceProvider.GetRequiredService<IDirectoryProvider>();
-	private readonly IFileProvider _fileProvider = serviceProvider.GetRequiredService<IFileProvider>();
-	private readonly IPathProvider _pathProvider = serviceProvider.GetRequiredService<IPathProvider>();
+	private readonly IDirectoryProvider _directoryProvider = directoryProvider;
+	private readonly IFileProvider _fileProvider = fileProvider;
+	private readonly IPathProvider _pathProvider = pathProvider;
 
 	protected int Action(ConvertSettingsBase settings, ImageType imageType)
 	{
