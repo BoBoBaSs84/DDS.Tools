@@ -18,7 +18,6 @@ using DDS.Tools.Models;
 using DDS.Tools.Properties;
 using DDS.Tools.Settings.Base;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Spectre.Console;
@@ -29,14 +28,22 @@ namespace DDS.Tools.Services;
 /// The todo service class.
 /// </summary>
 /// <param name="loggerService">The logger service instance to use.</param>
-/// <param name="serviceProvider">The service provider instance to use.</param>
-internal sealed class TodoService(ILoggerService<TodoService> loggerService, IServiceProvider serviceProvider) : ITodoService
+/// <param name="directoryProvider">The directory provider instance to use.</param>
+/// <param name="fileProvider">The file provider instance to use.</param>
+/// <param name="pathProvider">The path provider instance to use.</param>
+/// <param name="imageModelFactory">The image model factory instance to use.</param>
+internal sealed class TodoService(
+	ILoggerService<TodoService> loggerService,
+	IDirectoryProvider directoryProvider,
+	IFileProvider fileProvider,
+	IPathProvider pathProvider,
+	Func<ImageType, IImageModel> imageModelFactory) : ITodoService
 {
-	private readonly IDirectoryProvider _directoryProvider = serviceProvider.GetRequiredService<IDirectoryProvider>();
-	private readonly IFileProvider _fileProvider = serviceProvider.GetRequiredService<IFileProvider>();
-	private readonly IPathProvider _pathProvider = serviceProvider.GetRequiredService<IPathProvider>();
+	private readonly IDirectoryProvider _directoryProvider = directoryProvider;
+	private readonly IFileProvider _fileProvider = fileProvider;
+	private readonly IPathProvider _pathProvider = pathProvider;
+	private readonly Func<ImageType, IImageModel> _imageModelFactory = imageModelFactory;
 	private readonly ILoggerService<TodoService> _loggerService = loggerService;
-	private readonly IServiceProvider _serviceProvider = serviceProvider;
 
 	private readonly List<string> _todosDone = [];
 	private int _todosDuplicateCount = 0;
@@ -121,7 +128,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 	{
 		FileInfo fileInfo = new(file);
 
-		IImageModel image = _serviceProvider.GetRequiredKeyedService<IImageModel>(imageType);
+		IImageModel image = _imageModelFactory(imageType);
 		image.Load(file);
 
 		TodoModel todo = new(
@@ -183,7 +190,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 
 	private void CopyImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
 	{
-		IImageModel image = _serviceProvider.GetRequiredKeyedService<IImageModel>(imageType);
+		IImageModel image = _imageModelFactory(imageType);
 		image.Load(todo.FullPathName);
 
 		string targetFolder = PrepareTargetFolder(settings, image, todo);
@@ -200,7 +207,7 @@ internal sealed class TodoService(ILoggerService<TodoService> loggerService, ISe
 
 	private void SaveImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
 	{
-		IImageModel image = _serviceProvider.GetRequiredKeyedService<IImageModel>(imageType);
+		IImageModel image = _imageModelFactory(imageType);
 		image.Load(todo.FullPathName);
 
 		string targetFolder = PrepareTargetFolder(settings, image, todo);

@@ -14,8 +14,6 @@ using DDS.Tools.Models;
 using DDS.Tools.Settings;
 using DDS.Tools.Settings.Base;
 
-using Microsoft.Extensions.DependencyInjection;
-
 using Moq;
 
 using Spectre.Console.Cli;
@@ -36,8 +34,7 @@ public sealed class ConvertCommandBaseTests
 		DdsConvertSettings settings = new() { SourceFolder = @"X:\Missing", TargetFolder = @"X:\Target" };
 		directoryProviderMock.Setup(x => x.Exists(settings.SourceFolder)).Returns(false);
 
-		IServiceProvider serviceProvider = CreateServiceProvider(directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
-		TestConvertCommand command = new(todoServiceMock.Object, serviceProvider);
+		TestConvertCommand command = new(todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
 
 		Assert.Throws<CommandException>(() => command.InvokeAction(settings, ImageType.DDS));
 
@@ -62,8 +59,7 @@ public sealed class ConvertCommandBaseTests
 		fileProviderMock.Setup(x => x.Exists(@"X:\Source\Result.json")).Returns(false);
 		todoServiceMock.Setup(x => x.GetTodos(settings, ImageType.DDS)).Returns(todos);
 
-		IServiceProvider serviceProvider = CreateServiceProvider(directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
-		TestConvertCommand command = new(todoServiceMock.Object, serviceProvider);
+		TestConvertCommand command = new(todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
 
 		int result = command.InvokeAction(settings, ImageType.DDS);
 
@@ -95,8 +91,7 @@ public sealed class ConvertCommandBaseTests
 		fileProviderMock.Setup(x => x.ReadAllText(JsonPath)).Returns(JsonContent);
 		todoServiceMock.Setup(x => x.GetTodos(settings, ImageType.DDS, JsonContent)).Returns(todos);
 
-		IServiceProvider serviceProvider = CreateServiceProvider(directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
-		TestConvertCommand command = new(todoServiceMock.Object, serviceProvider);
+		TestConvertCommand command = new(todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
 
 		int result = command.InvokeAction(settings, ImageType.DDS);
 
@@ -107,17 +102,12 @@ public sealed class ConvertCommandBaseTests
 		todoServiceMock.Verify(x => x.GetTodosDone(todos, settings, ImageType.DDS, true), Times.Once);
 	}
 
-	private static ServiceProvider CreateServiceProvider(IDirectoryProvider directoryProvider, IFileProvider fileProvider, IPathProvider pathProvider)
-	{
-		ServiceCollection services = new();
-		services.AddSingleton(directoryProvider);
-		services.AddSingleton(fileProvider);
-		services.AddSingleton(pathProvider);
-		return services.BuildServiceProvider();
-	}
-
-	private sealed class TestConvertCommand(ITodoService todoService, IServiceProvider serviceProvider)
-		: ConvertCommandBase<DdsConvertSettings>(todoService, serviceProvider)
+	private sealed class TestConvertCommand(
+		ITodoService todoService,
+		IDirectoryProvider directoryProvider,
+		IFileProvider fileProvider,
+		IPathProvider pathProvider)
+		: ConvertCommandBase<DdsConvertSettings>(todoService, directoryProvider, fileProvider, pathProvider)
 	{
 		public int InvokeAction(ConvertSettingsBase settings, ImageType imageType)
 			=> Action(settings, imageType);

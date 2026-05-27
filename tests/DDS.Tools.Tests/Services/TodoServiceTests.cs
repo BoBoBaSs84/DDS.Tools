@@ -15,7 +15,6 @@ using DDS.Tools.Services;
 using DDS.Tools.Settings;
 using DDS.Tools.Settings.Base;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Moq;
@@ -210,19 +209,12 @@ public sealed class TodoServiceTests
 	}
 
 	private TodoService CreateSut()
-	{
-		ServiceCollection services = new();
-
-		services.AddSingleton(_directoryProviderMock.Object);
-		services.AddSingleton(_fileProviderMock.Object);
-		services.AddSingleton(_pathProviderMock.Object);
-		services.AddKeyedSingleton<IImageModel>(ImageType.DDS, _imageModelMock.Object);
-		services.AddKeyedSingleton<IImageModel>(ImageType.PNG, _imageModelMock.Object);
-
-		ServiceProvider provider = services.BuildServiceProvider();
-
-		return new TodoService(_loggerServiceMock.Object, provider);
-	}
+	 => new(
+			_loggerServiceMock.Object,
+			_directoryProviderMock.Object,
+			_fileProviderMock.Object,
+			_pathProviderMock.Object,
+			_ => _imageModelMock.Object);
 
 	private void ConfigureCommonMocks()
 	{

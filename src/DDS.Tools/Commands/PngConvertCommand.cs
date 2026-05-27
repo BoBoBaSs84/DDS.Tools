@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using DDS.Tools.Commands.Base;
 using DDS.Tools.Enumerators;
+using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Settings;
 
@@ -24,9 +25,16 @@ namespace DDS.Tools.Commands;
 /// </summary>
 /// <param name="loggerService">The logger service instance to use.</param>
 /// <param name="todoService">The todo service instance to use.</param>
-/// <param name="serviceProvider">The service provier instance to use.</param>
-internal sealed class PngConvertCommand(ILoggerService<DdsConvertCommand> loggerService, ITodoService todoService, IServiceProvider serviceProvider)
-	: ConvertCommandBase<PngConvertSettings>(todoService, serviceProvider)
+/// <param name="directoryProvider">The directory provider instance to use.</param>
+/// <param name="fileProvider">The file provider instance to use.</param>
+/// <param name="pathProvider">The path provider instance to use.</param>
+internal sealed class PngConvertCommand(
+	ILoggerService<DdsConvertCommand> loggerService,
+	ITodoService todoService,
+	IDirectoryProvider directoryProvider,
+	IFileProvider fileProvider,
+	IPathProvider pathProvider)
+	: ConvertCommandBase<PngConvertSettings>(todoService, directoryProvider, fileProvider, pathProvider)
 {
 	private const ImageType Type = ImageType.PNG;
 	private readonly ILoggerService<DdsConvertCommand> _loggerService = loggerService;

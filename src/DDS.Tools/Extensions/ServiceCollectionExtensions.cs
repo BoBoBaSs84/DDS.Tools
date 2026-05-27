@@ -16,7 +16,6 @@ using DDS.Tools.Providers;
 using DDS.Tools.Services;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -38,23 +37,26 @@ internal static class ServiceCollectionExtensions
 	{
 		services.RegisterLoggerService(environment);
 
-		services.TryAddSingleton<DdsEncoder>();
-		services.TryAddSingleton<DdsDecoder>();
-		services.TryAddSingleton<ITodoService, TodoService>();
+		services.AddSingleton<DdsEncoder>();
+		services.AddSingleton<DdsDecoder>();
+		services.AddSingleton<ITodoService, TodoService>();
 
-		services.TryAddSingleton<IDirectoryProvider, DirectoryProvider>();
-		services.TryAddSingleton<IFileProvider, FileProvider>();
-		services.TryAddSingleton<IPathProvider, PathProvider>();
+		services.AddSingleton<IDirectoryProvider, DirectoryProvider>();
+		services.AddSingleton<IFileProvider, FileProvider>();
+		services.AddSingleton<IPathProvider, PathProvider>();
 
-		services.TryAddKeyedTransient<IImageModel, PngImageModel>(ImageType.PNG);
-		services.TryAddKeyedTransient<IImageModel, DdsImageModel>(ImageType.DDS);
+		services.AddKeyedTransient<IImageModel, PngImageModel>(ImageType.PNG);
+		services.AddKeyedTransient<IImageModel, DdsImageModel>(ImageType.DDS);
+
+		services.AddSingleton<Func<ImageType, IImageModel>>(serviceProvider
+			=> imageType => serviceProvider.GetRequiredKeyedService<IImageModel>(imageType));
 
 		return services;
 	}
 
 	private static IServiceCollection RegisterLoggerService(this IServiceCollection services, IHostEnvironment environment)
 	{
-		services.TryAddSingleton(typeof(ILoggerService<>), typeof(LoggerService<>));
+		services.AddSingleton(typeof(ILoggerService<>), typeof(LoggerService<>));
 
 		services.AddLogging(configure =>
 		{

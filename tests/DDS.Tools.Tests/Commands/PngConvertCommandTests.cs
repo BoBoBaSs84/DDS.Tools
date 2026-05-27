@@ -15,8 +15,6 @@ using DDS.Tools.Models;
 using DDS.Tools.Settings;
 using DDS.Tools.Settings.Base;
 
-using Microsoft.Extensions.DependencyInjection;
-
 using Moq;
 
 namespace DDS.Tools.Tests.Commands;
@@ -45,8 +43,7 @@ public sealed class PngConvertCommandTests
 		fileProviderMock.Setup(x => x.Exists(@"X:\Source\Result.json")).Returns(false);
 		todoServiceMock.Setup(x => x.GetTodos(settings, ImageType.PNG)).Returns(todos);
 
-		IServiceProvider serviceProvider = CreateServiceProvider(directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
-		PngConvertCommand command = new(loggerMock.Object, todoServiceMock.Object, serviceProvider);
+		PngConvertCommand command = new(loggerMock.Object, todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
 
 		int result = InvokeExecute(command, settings);
 
@@ -73,8 +70,7 @@ public sealed class PngConvertCommandTests
 
 		directoryProviderMock.Setup(x => x.Exists(settings.SourceFolder)).Returns(false);
 
-		IServiceProvider serviceProvider = CreateServiceProvider(directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
-		PngConvertCommand command = new(loggerMock.Object, todoServiceMock.Object, serviceProvider);
+		PngConvertCommand command = new(loggerMock.Object, todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
 
 		int result = InvokeExecute(command, settings);
 
@@ -98,12 +94,4 @@ public sealed class PngConvertCommandTests
 		return todos;
 	}
 
-	private static ServiceProvider CreateServiceProvider(IDirectoryProvider directoryProvider, IFileProvider fileProvider, IPathProvider pathProvider)
-	{
-		ServiceCollection services = new();
-		services.AddSingleton(directoryProvider);
-		services.AddSingleton(fileProvider);
-		services.AddSingleton(pathProvider);
-		return services.BuildServiceProvider();
-	}
 }
