@@ -6,9 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
 using BB84.Extensions;
-using BB84.Extensions.Serialization;
 
-using DDS.Tools.Common;
 using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
 using DDS.Tools.Interfaces.Models;
@@ -19,8 +17,6 @@ using DDS.Tools.Properties;
 using DDS.Tools.Settings.Base;
 
 using Microsoft.Extensions.Logging;
-
-using Spectre.Console;
 
 namespace DDS.Tools.Services;
 
@@ -39,10 +35,9 @@ internal sealed class TodoService(
 	IPathProvider pathProvider,
 	Func<ImageType, IImageModel> imageModelFactory) : ITodoService
 {
-	private readonly IDirectoryProvider _directoryProvider = directoryProvider;
-	private readonly IFileProvider _fileProvider = fileProvider;
-	private readonly IPathProvider _pathProvider = pathProvider;
-	private readonly Func<ImageType, IImageModel> _imageModelFactory = imageModelFactory;
+	private readonly TodoPlanningService _todoPlanningService = new(directoryProvider, pathProvider, imageModelFactory);
+	private readonly TodoTransformationService _todoTransformationService = new(directoryProvider, fileProvider, pathProvider, imageModelFactory);
+	private readonly TodoPersistenceService _todoPersistenceService = new(fileProvider, pathProvider);
 	private readonly ILoggerService<TodoService> _loggerService = loggerService;
 
 	private static readonly Action<ILogger, Exception?> LogException =
@@ -54,17 +49,7 @@ internal sealed class TodoService(
 	{
 		try
 		{
-			TodoCollection todos = [];
-
-			string[] files = _directoryProvider.GetFiles(settings.SourceFolder, $"*.{imageType}", SearchOption.AllDirectories);
-
-			if (files.Length.Equals(0))
-				return todos;
-
-			foreach (string file in files)
-				GetTodo(todos, settings, imageType, file);
-
-			return todos;
+      return _todoPlanningService.GetTodos(settings, imageType);
 		}
 		catch (Exception ex)
 		{
@@ -80,14 +65,7 @@ internal sealed class TodoService(
 	{
 		try
 		{
-			TodoCollection todos = [];
-
-			TodoCollection todosFromJson = jsonFileContent.FromJson<TodoCollection>();
-
-			foreach (TodoModel todoFromJson in todosFromJson)
-				GetTodoFromJson(todos, settings, imageType, todoFromJson);
-
-			return todos;
+     return _todoPlanningService.GetTodos(settings, imageType, jsonFileContent);
 		}
 		catch (Exception ex)
 		{
@@ -103,21 +81,8 @@ internal sealed class TodoService(
 	{
 		try
 		{
-			HashSet<string> todosDone = [];
-			int todosDuplicateCount = 0;
-
-			foreach (TodoModel todo in todos)
-				GetTodoDone(todo, settings, imageType, todosDone, ref todosDuplicateCount);
-
-			if (!jsonExists && settings.ConvertMode.Equals(ConvertModeType.Automatic))
-			{
-				string jsonContent = todos.ToJson();
-				string jsonFilePath = _pathProvider.Combine(settings.TargetFolder, Constants.ResultFileName);
-				_fileProvider.WriteAllText(jsonFilePath, jsonContent);
-			}
-
-			AnsiConsole.MarkupLine($"[green]Todos done:\t{todosDone.Count}[/]");
-			AnsiConsole.MarkupLine($"[yellow]Duplicates:\t{todosDuplicateCount}[/]");
+      TodoProcessingResult result = _todoTransformationService.GetTodosDone(todos, settings, imageType);
+			_todoPersistenceService.PersistResult(todos, settings, jsonExists, result);
 		}
 		catch (Exception ex)
 		{
@@ -126,149 +91,4 @@ internal sealed class TodoService(
 			throw new ServiceException(message, ex);
 		}
 	}
-
-	private void GetTodo(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, string file)
-	{
-		FileInfo fileInfo = new(file);
-
-		IImageModel image = _imageModelFactory(imageType);
-		image.Load(file);
-
-		TodoModel todo = new(
-			fileName: fileInfo.Name,
-			relativePath: $"{fileInfo.DirectoryName?.Replace(settings.SourceFolder, string.Empty)}",
-			fullPathName: fileInfo.FullName,
-			targetFolder: settings.TargetFolder,
-			fileHash: image.Hash
-			);
-
-		todos.Enqueue(todo);
-	}
-
-	private void GetTodoFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, TodoModel todoFromJson)
-	{
-		string newFullPathName = _pathProvider
-			.Combine(settings.TargetFolder, todoFromJson.RelativePath, todoFromJson.FileName.Replace(GetTargetFileExtensions(imageType), $"{imageType}"));
-
-		TodoModel todo = new(
-			fileName: $"{todoFromJson.FileHash}.{GetTargetFileExtensions(imageType)}",
-			relativePath: todoFromJson.RelativePath,
-			fullPathName: newFullPathName,
-			targetFolder: settings.TargetFolder,
-			fileHash: todoFromJson.FileHash
-			);
-
-		todos.Enqueue(todo);
-	}
-
-	private void GetTodoDone(TodoModel todo, ConvertSettingsBase settings, ImageType imageType, ISet<string> todosDone, ref int todosDuplicateCount)
-	{
-		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
-		{
-			if (todosDone.Contains(todo.FileHash))
-			{
-				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
-				todosDuplicateCount++;
-				return;
-			}
-		}
-		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
-		{
-			if (todosDone.Contains(todo.FileHash))
-			{
-				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
-				todosDuplicateCount++;
-				return;
-			}
-
-			CopyImage(settings, todo, imageType);
-			todosDone.Add(todo.FileHash);
-			return;
-		}
-
-		SaveImage(settings, todo, imageType);
-
-		todosDone.Add(todo.FileHash);
-	}
-
-	private void CopyImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
-	{
-		IImageModel image = _imageModelFactory(imageType);
-		image.Load(todo.FullPathName);
-
-		string targetFolder = PrepareTargetFolder(settings, image, todo);
-		DirectoryInfo directoryInfo = _directoryProvider.CreateDirectory(targetFolder);
-
-		if (directoryInfo.Exists)
-		{
-			string newFileName = GetTargetFileName(settings, todo);
-			string newFilePath = _pathProvider.Combine(targetFolder, newFileName);
-
-			_fileProvider.Copy(todo.FullPathName, newFilePath);
-		}
-	}
-
-	private void SaveImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
-	{
-		IImageModel image = _imageModelFactory(imageType);
-		image.Load(todo.FullPathName);
-
-		string targetFolder = PrepareTargetFolder(settings, image, todo);
-		DirectoryInfo directoryInfo = _directoryProvider.CreateDirectory(targetFolder);
-
-		if (directoryInfo.Exists)
-		{
-			string newFileName = $"{GetTargetFileName(settings, todo)}.{GetTargetFileExtensions(imageType)}";
-			string newFilePath = _pathProvider.Combine(targetFolder, newFileName);
-
-			image.Save(newFilePath, settings);
-		}
-	}
-
-	private string PrepareTargetFolder(ConvertSettingsBase settings, IImageModel image, TodoModel todo)
-	{
-		string newTargetFolder = todo.TargetFolder;
-
-		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
-		{
-			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}");
-			return newTargetFolder;
-		}
-		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
-		{
-			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}x{image.Heigth}");
-			return newTargetFolder;
-		}
-
-		if (settings.RetainStructure)
-			return $"{newTargetFolder}{todo.RelativePath}";
-
-		if (settings.SeparateBySize)
-			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}");
-
-		return newTargetFolder;
-	}
-
-	private static string GetTargetFileName(ConvertSettingsBase settings, TodoModel todo)
-	{
-		if (settings.ConvertMode == ConvertModeType.Manual && settings.RetainStructure)
-		{
-			FileInfo info = new(todo.FullPathName);
-			return todo.FileName.Replace(info.Extension, string.Empty);
-		}
-		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
-		{
-			return todo.FileName;
-		}
-
-		return todo.FileHash;
-	}
-
-	private static string GetTargetFileExtensions(ImageType imageType)
-		=> imageType switch
-		{
-			ImageType.DDS => $"{ImageType.PNG}",
-			ImageType.PNG => $"{ImageType.DDS}",
-			_ => throw new ArgumentOutOfRangeException(nameof(imageType), imageType, null)
-		};
 }
