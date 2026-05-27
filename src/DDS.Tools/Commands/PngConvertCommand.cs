@@ -13,9 +13,6 @@ using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Settings;
 
-using Microsoft.Extensions.Logging;
-
-using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace DDS.Tools.Commands;
@@ -29,33 +26,16 @@ namespace DDS.Tools.Commands;
 /// <param name="fileProvider">The file provider instance to use.</param>
 /// <param name="pathProvider">The path provider instance to use.</param>
 internal sealed class PngConvertCommand(
-	ILoggerService<DdsConvertCommand> loggerService,
+	ILoggerService<PngConvertCommand> loggerService,
 	ITodoService todoService,
 	IDirectoryProvider directoryProvider,
 	IFileProvider fileProvider,
 	IPathProvider pathProvider)
-	: ConvertCommandBase<PngConvertSettings>(todoService, directoryProvider, fileProvider, pathProvider)
+	: ConvertCommandBase<PngConvertSettings, PngConvertCommand>(loggerService, todoService, directoryProvider, fileProvider, pathProvider)
 {
 	private const ImageType Type = ImageType.PNG;
-	private readonly ILoggerService<DdsConvertCommand> _loggerService = loggerService;
-
-	private static readonly Action<ILogger, Exception?> LogException =
-		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
 
 	/// <inheritdoc/>
 	protected override int Execute([NotNull] CommandContext context, [NotNull] PngConvertSettings settings, CancellationToken cancellationToken)
-	{
-		try
-		{
-			return AnsiConsole.Status()
-				.Spinner(Spinner.Known.Line)
-				.Start("Processing..", action => Action(settings, Type));
-		}
-		catch (Exception ex)
-		{
-			_loggerService.Log(LogException, ex);
-			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
-			return 1;
-		}
-	}
+	 => ExecuteCommand(settings, Type);
 }

@@ -25,7 +25,7 @@ public sealed class PngConvertCommandTests
 	[TestMethod]
 	public void PngConvertCommandExecuteSuccessTest()
 	{
-		Mock<ILoggerService<DdsConvertCommand>> loggerMock = new();
+		Mock<ILoggerService<PngConvertCommand>> loggerMock = new();
 		Mock<ITodoService> todoServiceMock = new();
 		Mock<IDirectoryProvider> directoryProviderMock = new();
 		Mock<IFileProvider> fileProviderMock = new();
@@ -56,7 +56,7 @@ public sealed class PngConvertCommandTests
 	[TestMethod]
 	public void PngConvertCommandExecuteExceptionTest()
 	{
-		Mock<ILoggerService<DdsConvertCommand>> loggerMock = new();
+		Mock<ILoggerService<PngConvertCommand>> loggerMock = new();
 		Mock<ITodoService> todoServiceMock = new();
 		Mock<IDirectoryProvider> directoryProviderMock = new();
 		Mock<IFileProvider> fileProviderMock = new();
@@ -80,6 +80,36 @@ public sealed class PngConvertCommandTests
 		todoServiceMock.Verify(x => x.GetTodosDone(It.IsAny<TodoCollection>(), It.IsAny<ConvertSettingsBase>(), It.IsAny<ImageType>(), It.IsAny<bool>()), Times.Never);
 	}
 
+	[TestMethod]
+	public void PngConvertCommandExecuteWhenTodoServiceThrowsLogsExceptionAndReturnsOne()
+	{
+		Mock<ILoggerService<PngConvertCommand>> loggerMock = new();
+		Mock<ITodoService> todoServiceMock = new();
+		Mock<IDirectoryProvider> directoryProviderMock = new();
+		Mock<IFileProvider> fileProviderMock = new();
+		Mock<IPathProvider> pathProviderMock = new();
+
+		PngConvertSettings settings = new()
+		{
+			SourceFolder = @"X:\Source",
+			TargetFolder = @"X:\Target"
+		};
+
+		directoryProviderMock.Setup(x => x.Exists(settings.SourceFolder)).Returns(true);
+		pathProviderMock.Setup(x => x.Combine(settings.SourceFolder, "Result.json")).Returns(@"X:\Source\Result.json");
+		fileProviderMock.Setup(x => x.Exists(@"X:\Source\Result.json")).Returns(false);
+		todoServiceMock.Setup(x => x.GetTodos(settings, ImageType.PNG)).Throws(new InvalidOperationException("boom"));
+
+		PngConvertCommand command = new(loggerMock.Object, todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
+
+		int result = InvokeExecute(command, settings);
+
+		Assert.AreEqual(1, result);
+		loggerMock.Verify(x => x.Log(It.IsAny<Action<Microsoft.Extensions.Logging.ILogger, Exception?>>(), It.IsAny<Exception?>()), Times.Once);
+		todoServiceMock.Verify(x => x.GetTodos(settings, ImageType.PNG), Times.Once);
+		todoServiceMock.Verify(x => x.GetTodosDone(It.IsAny<TodoCollection>(), It.IsAny<ConvertSettingsBase>(), It.IsAny<ImageType>(), It.IsAny<bool>()), Times.Never);
+	}
+
 	private static int InvokeExecute(PngConvertCommand command, PngConvertSettings settings)
 	{
 		MethodInfo method = typeof(PngConvertCommand).GetMethod("Execute", BindingFlags.Instance | BindingFlags.NonPublic)!;
@@ -93,5 +123,4 @@ public sealed class PngConvertCommandTests
 		todos.Enqueue(new TodoModel("32.dds", string.Empty, @"X:\Source\32.dds", @"X:\Target", "HASH-1"));
 		return todos;
 	}
-
 }

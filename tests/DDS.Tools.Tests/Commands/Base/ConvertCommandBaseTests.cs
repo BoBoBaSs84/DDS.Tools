@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
+using DDS.Tools.Commands;
 using DDS.Tools.Commands.Base;
 using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
@@ -26,6 +27,7 @@ public sealed class ConvertCommandBaseTests
 	[TestMethod]
 	public void ActionSourceFolderMissingThrowsCommandException()
 	{
+		Mock<ILoggerService<DdsConvertCommand>> loggerServiceMock = new();
 		Mock<ITodoService> todoServiceMock = new();
 		Mock<IDirectoryProvider> directoryProviderMock = new();
 		Mock<IFileProvider> fileProviderMock = new();
@@ -34,7 +36,7 @@ public sealed class ConvertCommandBaseTests
 		DdsConvertSettings settings = new() { SourceFolder = @"X:\Missing", TargetFolder = @"X:\Target" };
 		directoryProviderMock.Setup(x => x.Exists(settings.SourceFolder)).Returns(false);
 
-		TestConvertCommand command = new(todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
+		TestConvertCommand command = new(loggerServiceMock.Object, todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
 
 		Assert.Throws<CommandException>(() => command.InvokeAction(settings, ImageType.DDS));
 
@@ -46,6 +48,7 @@ public sealed class ConvertCommandBaseTests
 	[TestMethod]
 	public void ActionWithoutJsonAndWithoutTodosReturnsOne()
 	{
+		Mock<ILoggerService<DdsConvertCommand>> loggerServiceMock = new();
 		Mock<ITodoService> todoServiceMock = new();
 		Mock<IDirectoryProvider> directoryProviderMock = new();
 		Mock<IFileProvider> fileProviderMock = new();
@@ -59,7 +62,7 @@ public sealed class ConvertCommandBaseTests
 		fileProviderMock.Setup(x => x.Exists(@"X:\Source\Result.json")).Returns(false);
 		todoServiceMock.Setup(x => x.GetTodos(settings, ImageType.DDS)).Returns(todos);
 
-		TestConvertCommand command = new(todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
+		TestConvertCommand command = new(loggerServiceMock.Object, todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
 
 		int result = command.InvokeAction(settings, ImageType.DDS);
 
@@ -73,6 +76,7 @@ public sealed class ConvertCommandBaseTests
 	[TestMethod]
 	public void ActionWithJsonUsesJsonOverloadAndReturnsZero()
 	{
+		Mock<ILoggerService<DdsConvertCommand>> loggerServiceMock = new();
 		Mock<ITodoService> todoServiceMock = new();
 		Mock<IDirectoryProvider> directoryProviderMock = new();
 		Mock<IFileProvider> fileProviderMock = new();
@@ -91,7 +95,7 @@ public sealed class ConvertCommandBaseTests
 		fileProviderMock.Setup(x => x.ReadAllText(JsonPath)).Returns(JsonContent);
 		todoServiceMock.Setup(x => x.GetTodos(settings, ImageType.DDS, JsonContent)).Returns(todos);
 
-		TestConvertCommand command = new(todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
+		TestConvertCommand command = new(loggerServiceMock.Object, todoServiceMock.Object, directoryProviderMock.Object, fileProviderMock.Object, pathProviderMock.Object);
 
 		int result = command.InvokeAction(settings, ImageType.DDS);
 
@@ -103,11 +107,12 @@ public sealed class ConvertCommandBaseTests
 	}
 
 	private sealed class TestConvertCommand(
+		ILoggerService<DdsConvertCommand> loggerService,
 		ITodoService todoService,
 		IDirectoryProvider directoryProvider,
 		IFileProvider fileProvider,
 		IPathProvider pathProvider)
-		: ConvertCommandBase<DdsConvertSettings>(todoService, directoryProvider, fileProvider, pathProvider)
+	 : ConvertCommandBase<DdsConvertSettings, DdsConvertCommand>(loggerService, todoService, directoryProvider, fileProvider, pathProvider)
 	{
 		public int InvokeAction(ConvertSettingsBase settings, ImageType imageType)
 			=> Action(settings, imageType);
