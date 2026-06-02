@@ -9,8 +9,6 @@ using DDS.Tools.Enumerators;
 using DDS.Tools.Settings;
 using DDS.Tools.Tests;
 
-using SixLabors.ImageSharp.Formats.Png;
-
 namespace DDS.Tools.Tests.Settings;
 
 [TestClass]

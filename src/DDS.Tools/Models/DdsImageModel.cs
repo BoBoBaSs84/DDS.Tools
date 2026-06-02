@@ -5,10 +5,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
+using System.Runtime.InteropServices;
+
 using BB84.Extensions;
 
-using BCnEncoder.ImageSharp;
+using BCnEncoder.Shared.ImageFiles;
 
+using DDS.Tools.Enumerators;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models.Base;
@@ -17,9 +20,7 @@ using DDS.Tools.Settings.Base;
 
 using Microsoft.Extensions.Logging;
 
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
 
 using Spectre.Console;
 
@@ -34,7 +35,7 @@ internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageM
 {
 	private readonly DdsDecoder _ddsDecoder = decoder;
 	private readonly ILoggerService<DdsImageModel> _logger = logger;
-	private Image<Rgba32>? _image;
+	private SKBitmap? _bitmap;
 
 	private static readonly Action<ILogger, string, Exception?> LogExceptionWithParams =
 		LoggerMessage.Define<string>(LogLevel.Error, 0, "Exception occured. Params = {Parameters}");
@@ -53,9 +54,31 @@ internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageM
 			Path = fileInfo.FullName;
 
 			using FileStream fileStream = File.OpenRead(filePath);
-			_image = _ddsDecoder.DecodeToImageRgba32(fileStream);
-			Width = _image.Width;
-			Heigth = _image.Height;
+			DdsFile ddsFile = DdsFile.Load(fileStream);
+
+			int width = (int)ddsFile.Faces[0].Width;
+			int height = (int)ddsFile.Faces[0].Height;
+
+			BCnEncoder.Shared.ColorRgba32[] pixels = _ddsDecoder.Decode(ddsFile);
+
+			// Convert ColorRgba32[] (RGBA byte layout) into an SKBitmap backed by Rgba8888 memory.
+			byte[] rgbaBytes = new byte[width * height * 4];
+			int count = Math.Min(pixels.Length, width * height);
+
+			for (int i = 0; i < count; i++)
+			{
+				rgbaBytes[i * 4] = pixels[i].r;
+				rgbaBytes[i * 4 + 1] = pixels[i].g;
+				rgbaBytes[i * 4 + 2] = pixels[i].b;
+				rgbaBytes[i * 4 + 3] = pixels[i].a;
+			}
+
+			var info = new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+			_bitmap = new SKBitmap(info);
+			Marshal.Copy(rgbaBytes, 0, _bitmap.GetPixels(), rgbaBytes.Length);
+
+			Width = width;
+			Heigth = height;
 
 			fileStream.Position = 0;
 			Data = fileStream.ToByteArray();
@@ -82,8 +105,13 @@ internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageM
 				throw new ArgumentException($"Already exists: '{filePath}'");
 
 			using FileStream fileStream = File.OpenWrite(filePath);
-			PngEncoder pngEncoder = new() { CompressionLevel = ddsSettings.Compression };
-			_image.SaveAsPng(fileStream, pngEncoder);
+
+			// Map PngCompressionLevel (0–9) to SkiaSharp PNG quality (100 = no compression, 0 = max compression).
+			int quality = MapCompressionLevelToQuality(ddsSettings.Compression);
+
+			using SKImage skImage = SKImage.FromBitmap(_bitmap);
+			using SKData encoded = skImage.Encode(SKEncodedImageFormat.Png, quality);
+			encoded.SaveTo(fileStream);
 		}
 		catch (Exception ex)
 		{
@@ -91,4 +119,11 @@ internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageM
 			AnsiConsole.MarkupLine($"[maroon]{ex.Message}[/]");
 		}
 	}
+
+	/// <summary>
+	/// Maps a <see cref="PngCompressionLevel"/> value (0–9) to a SkiaSharp PNG quality value (0–100).
+	/// SkiaSharp quality 100 means least compression; 0 means most compression.
+	/// </summary>
+	private static int MapCompressionLevelToQuality(PngCompressionLevel level) =>
+		(9 - (int)level) * 100 / 9;
 }

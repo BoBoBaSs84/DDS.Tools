@@ -7,9 +7,8 @@
 // -----------------------------------------------------------------------------
 using System.ComponentModel;
 
+using DDS.Tools.Enumerators;
 using DDS.Tools.Settings.Base;
-
-using SixLabors.ImageSharp.Formats.Png;
 
 using Spectre.Console.Cli;
 
