@@ -27,6 +27,11 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
 
+      - name: Install SkiaSharp dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fontconfig libfreetype6 libxcb-render0 libxrender1
+
       - name: Extract version from tag
         id: version
         run: |
