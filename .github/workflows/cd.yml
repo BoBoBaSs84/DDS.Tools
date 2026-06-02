@@ -35,19 +35,19 @@ jobs:
           echo "Extracted version: $tagName"
 
       - name: Restore dependencies
-        run: dotnet restore ${SOLUTION}
+        run: dotnet restore ${{ env.SOLUTION }}
 
       - name: Build solution
         run: >
-          dotnet build ${SOLUTION}
-          --configuration ${CONFIGURATION}
+          dotnet build ${{ env.SOLUTION }}
+          --configuration ${{ env.CONFIGURATION }}
           --no-restore
           -p:VersionPrefix=${{ steps.version.outputs.VERSION }}
           -p:VersionSuffix=
           -p:FileVersion=${{ steps.version.outputs.VERSION }}
 
       - name: Run tests
-        run: dotnet test ${SOLUTION} --configuration ${CONFIGURATION} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+        run: dotnet test ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
 
       - name: Upload test results
         if: always()
@@ -59,8 +59,8 @@ jobs:
       - name: Publish application
         run: >
           dotnet publish src/DDS.Tools/DDS.Tools.csproj
-          --configuration ${CONFIGURATION}
-          --runtime ${RUNTIME}
+          --configuration ${{ env.CONFIGURATION }}
+          --runtime ${{ env.RUNTIME }}
           --output ./publish
           -p:VersionPrefix=${{ steps.version.outputs.VERSION }}
           -p:VersionSuffix=

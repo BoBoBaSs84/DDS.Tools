@@ -28,13 +28,13 @@ jobs:
         uses: actions/setup-dotnet@v5
 
       - name: Restore dependencies
-        run: dotnet restore ${SOLUTION}
+        run: dotnet restore ${{ env.SOLUTION }}
 
       - name: Build solution
-        run: dotnet build ${SOLUTION} --configuration ${CONFIGURATION} --no-restore
+        run: dotnet build ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-restore
 
       - name: Run tests
-        run: dotnet test ${SOLUTION} --configuration ${CONFIGURATION} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+        run: dotnet test ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
 
       - name: Upload test results
         if: always()
