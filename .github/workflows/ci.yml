@@ -18,7 +18,7 @@ jobs:
       CONFIGURATION: Release
 
     name: Build & Test
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -26,11 +26,6 @@ jobs:
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
-
-      - name: Install SkiaSharp dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libfontconfig1 libfreetype6 libx11-6 libxcb1 libxrender1
 
       - name: Restore dependencies
         run: dotnet restore ${SOLUTION}

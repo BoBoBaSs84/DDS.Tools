@@ -11,7 +11,7 @@ permissions:
 jobs:
   deploy:
     name: Build, Test & Publish
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     env:
       DOTNET_NOLOGO: true
@@ -26,11 +26,6 @@ jobs:
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
-
-      - name: Install SkiaSharp dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libfontconfig1 libfreetype6 libx11-6 libxcb1 libxrender1
 
       - name: Extract version from tag
         id: version
