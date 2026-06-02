@@ -11,9 +11,8 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="BCnEncoder.Net" />
-		<PackageReference Include="BCnEncoder.Net.ImageSharp" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
-		<PackageReference Include="SixLabors.ImageSharp" />
+		<PackageReference Include="SkiaSharp" />
 		<PackageReference Include="Spectre.Console" />
 		<PackageReference Include="Spectre.Console.Cli" />
 	</ItemGroup>

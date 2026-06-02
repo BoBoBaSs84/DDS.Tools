@@ -5,9 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
+using System.Runtime.InteropServices;
+
 using BB84.Extensions;
 
-using BCnEncoder.ImageSharp;
+using BCnEncoder.Encoder;
 using BCnEncoder.Shared;
 using BCnEncoder.Shared.ImageFiles;
 
@@ -19,8 +21,7 @@ using DDS.Tools.Settings.Base;
 
 using Microsoft.Extensions.Logging;
 
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
 
 using Spectre.Console;
 
@@ -35,7 +36,7 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 {
 	private readonly DdsEncoder _ddsEncoder = encoder;
 	private readonly ILoggerService<PngImageModel> _logger = logger;
-	private Image<Rgba32>? _image;
+	private SKBitmap? _bitmap;
 
 	private static readonly Action<ILogger, string, Exception?> LogExceptionWithParams =
 		LoggerMessage.Define<string>(LogLevel.Error, 0, "Exception occured. Params = {Parameters}");
@@ -54,13 +55,27 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 			Path = fileInfo.FullName;
 
 			using FileStream fileStream = File.OpenRead(filePath);
-			_image = Image.Load<Rgba32>(fileStream);
-			Width = _image.Width;
-			Heigth = _image.Height;
 
-			fileStream.Position = 0;
+			// Read raw bytes first, before SkiaSharp consumes the stream.
 			Data = fileStream.ToByteArray();
 			Hash = Data.GetMD5String();
+
+			fileStream.Position = 0;
+			SKBitmap decoded = SKBitmap.Decode(fileStream);
+
+			// Ensure the bitmap is in Rgba8888 format so BCnEncoder receives the expected byte layout.
+			if (decoded.ColorType != SKColorType.Rgba8888)
+			{
+				_bitmap = decoded.Copy(SKColorType.Rgba8888);
+				decoded.Dispose();
+			}
+			else
+			{
+				_bitmap = decoded;
+			}
+
+			Width = _bitmap.Width;
+			Heigth = _bitmap.Height;
 		}
 		catch (Exception ex)
 		{
@@ -82,12 +97,16 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 			if (fileInfo.Exists)
 				throw new ArgumentException($"Already exists: '{filePath}'");
 
-			if (_image is not null && HasTransparency(_image))
+			if (_bitmap is not null && HasTransparency(_bitmap))
 				_ddsEncoder.OutputOptions.Format = CompressionFormat.Bc3;
 
 			_ddsEncoder.OutputOptions.Quality = pngSettings.Compression;
 
-			DdsFile ddsFile = _ddsEncoder.EncodeToDds(_image);
+			// Extract raw RGBA bytes from the bitmap and encode to DDS using BCnEncoder's raw API.
+			byte[] rgbaBytes = new byte[_bitmap!.ByteCount];
+			Marshal.Copy(_bitmap.GetPixels(), rgbaBytes, 0, rgbaBytes.Length);
+
+			DdsFile ddsFile = _ddsEncoder.EncodeToDds(rgbaBytes, _bitmap.Width, _bitmap.Height, PixelFormat.Rgba32);
 			using FileStream fileStream = File.OpenWrite(filePath);
 			ddsFile.Write(fileStream);
 		}
@@ -98,23 +117,17 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 		}
 	}
 
-	private static bool HasTransparency(Image<Rgba32> image)
+	private static bool HasTransparency(SKBitmap bitmap)
 	{
-		bool hasTransparency = false;
-		image.ProcessPixelRows(pixelAccessor =>
+		for (int y = 0; y < bitmap.Height; y++)
 		{
-			for (int y = 0; y < pixelAccessor.Height; y++)
+			for (int x = 0; x < bitmap.Width; x++)
 			{
-				Span<Rgba32> row = pixelAccessor.GetRowSpan(y);
-				for (int x = 0; x < row.Length; x++)
-				{
-					Rgba32 pixel = row[x];
-
-					if (pixel.A < byte.MaxValue)
-						hasTransparency = true;
-				}
+				if (bitmap.GetPixel(x, y).Alpha < byte.MaxValue)
+					return true;
 			}
-		});
-		return hasTransparency;
+		}
+
+		return false;
 	}
 }
