@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="BB84.Extensions" Version="4.6.724" />
+    <PackageVersion Include="BB84.Extensions" Version="4.6.803" />
     <PackageVersion Include="BB84.SourceGenerators" Version="2.3.712" />
     <PackageVersion Include="BCnEncoder.Net" Version="2.3.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
