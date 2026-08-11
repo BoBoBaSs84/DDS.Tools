@@ -168,6 +168,89 @@ public sealed class TodoServiceTests
 	}
 
 	[TestMethod]
+	public void GetTodosDoneManualWithRetainStructureKeepsFolderAndFileName()
+	{
+		ConfigureCommonMocks();
+		PngConvertSettings settings = CreateSettings(ConvertModeType.Manual);
+		settings.RetainStructure = true;
+
+		string relativePath = $"{Path.DirectorySeparatorChar}Blue";
+		TodoCollection todos = new();
+		todos.Enqueue(new TodoModel("64.DDS", relativePath, Path.Combine(settings.SourceFolder, "Blue", "64.DDS"), settings.TargetFolder, "HASH_A"));
+
+		TodoService sut = CreateSut();
+
+		sut.GetTodosDone(todos, settings, ImageType.DDS);
+
+		// RetainStructure concatenates the relative path and strips the source extension.
+		string expectedSavePath = Path.Combine($"{settings.TargetFolder}{relativePath}", "64.PNG");
+
+		_imageModelMock.Verify(x => x.Save(expectedSavePath, settings), Times.Once);
+	}
+
+	[TestMethod]
+	public void GetTodosDoneManualWithSeparateBySizeUsesWidthFolderAndHashName()
+	{
+		ConfigureCommonMocks();
+		PngConvertSettings settings = CreateSettings(ConvertModeType.Manual);
+		settings.SeparateBySize = true;
+
+		_imageModelMock.SetupGet(x => x.Width).Returns(64);
+
+		TodoCollection todos = new();
+		todos.Enqueue(new TodoModel("64.DDS", string.Empty, Path.Combine(settings.SourceFolder, "64.DDS"), settings.TargetFolder, "HASH_A"));
+
+		TodoService sut = CreateSut();
+
+		sut.GetTodosDone(todos, settings, ImageType.DDS);
+
+		string expectedSavePath = Path.Combine(settings.TargetFolder, "64", "HASH_A.PNG");
+
+		_imageModelMock.Verify(x => x.Save(expectedSavePath, settings), Times.Once);
+	}
+
+	[TestMethod]
+	public void GetTodosDoneManualWithoutOptionsUsesTargetFolderAndHashName()
+	{
+		ConfigureCommonMocks();
+		PngConvertSettings settings = CreateSettings(ConvertModeType.Manual);
+
+		TodoCollection todos = new();
+		todos.Enqueue(new TodoModel("64.DDS", string.Empty, Path.Combine(settings.SourceFolder, "64.DDS"), settings.TargetFolder, "HASH_A"));
+
+		TodoService sut = CreateSut();
+
+		sut.GetTodosDone(todos, settings, ImageType.DDS);
+
+		string expectedSavePath = Path.Combine(settings.TargetFolder, "HASH_A.PNG");
+
+		_imageModelMock.Verify(x => x.Save(expectedSavePath, settings), Times.Once);
+
+		// The result json is only persisted in automatic mode.
+		_fileProviderMock.Verify(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+	}
+
+	[TestMethod]
+	public void GetTodosDoneManualWithDuplicatesSavesEveryTodo()
+	{
+		ConfigureCommonMocks();
+		PngConvertSettings settings = CreateSettings(ConvertModeType.Manual);
+
+		TodoCollection todos = new();
+		todos.Enqueue(new TodoModel("a.DDS", string.Empty, Path.Combine(settings.SourceFolder, "a.DDS"), settings.TargetFolder, "DUP_HASH"));
+		todos.Enqueue(new TodoModel("b.DDS", string.Empty, Path.Combine(settings.SourceFolder, "b.DDS"), settings.TargetFolder, "DUP_HASH"));
+
+		TodoService sut = CreateSut();
+
+		sut.GetTodosDone(todos, settings, ImageType.DDS);
+
+		// Manual mode does not deduplicate by hash, so both todos are saved.
+		string expectedSavePath = Path.Combine(settings.TargetFolder, "DUP_HASH.PNG");
+
+		_imageModelMock.Verify(x => x.Save(expectedSavePath, settings), Times.Exactly(2));
+	}
+
+	[TestMethod]
 	public void GetTodosDoneWhenImageLoadThrowsThrowsServiceExceptionAndLogs()
 	{
 		ConfigureCommonMocks();
