@@ -37,7 +37,7 @@ public class DdsImageModelTests : UnitTestBase
 		Assert.AreNotEqual(string.Empty, image.Name);
 		Assert.AreNotEqual(string.Empty, image.Path);
 		Assert.AreNotEqual(0, image.Width);
-		Assert.AreNotEqual(0, image.Heigth);
+		Assert.AreNotEqual(0, image.Height);
 		Assert.AreNotEqual([], image.Data);
 		Assert.AreNotEqual(string.Empty, image.Hash);
 	}

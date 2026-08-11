@@ -78,7 +78,7 @@ internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageM
 			Marshal.Copy(rgbaBytes, 0, _bitmap.GetPixels(), rgbaBytes.Length);
 
 			Width = width;
-			Heigth = height;
+			Height = height;
 
 			fileStream.Position = 0;
 			Data = fileStream.ToByteArray();

@@ -75,7 +75,7 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 			}
 
 			Width = _bitmap.Width;
-			Heigth = _bitmap.Height;
+			Height = _bitmap.Height;
 		}
 		catch (Exception ex)
 		{
