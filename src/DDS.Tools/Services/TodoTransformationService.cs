@@ -94,7 +94,7 @@ internal sealed class TodoTransformationService(
 		}
 		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
 		{
-			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}x{image.Heigth}");
+			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}x{image.Height}");
 			return newTargetFolder;
 		}
 

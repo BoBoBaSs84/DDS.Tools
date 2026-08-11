@@ -123,7 +123,7 @@ public sealed class TodoServiceTests
 		PngConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
 
 		_imageModelMock.SetupGet(x => x.Width).Returns(64);
-		_imageModelMock.SetupGet(x => x.Heigth).Returns(32);
+		_imageModelMock.SetupGet(x => x.Height).Returns(32);
 
 		TodoCollection todos = new();
 		todos.Enqueue(new TodoModel("a.DDS", string.Empty, Path.Combine(settings.SourceFolder, "a.DDS"), settings.TargetFolder, "DUP_HASH"));
@@ -147,7 +147,7 @@ public sealed class TodoServiceTests
 		PngConvertSettings settings = CreateSettings(ConvertModeType.Grouping);
 
 		_imageModelMock.SetupGet(x => x.Width).Returns(128);
-		_imageModelMock.SetupGet(x => x.Heigth).Returns(64);
+		_imageModelMock.SetupGet(x => x.Height).Returns(64);
 
 		TodoCollection todos = new();
 		todos.Enqueue(new TodoModel("x.DDS", string.Empty, Path.Combine(settings.SourceFolder, "x.DDS"), settings.TargetFolder, "DUP_HASH"));

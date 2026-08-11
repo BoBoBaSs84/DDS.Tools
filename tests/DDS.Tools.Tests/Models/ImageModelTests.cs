@@ -21,7 +21,7 @@ public sealed class ImageModelTests
 
 		Assert.AreEqual(string.Empty, model.Name);
 		Assert.AreEqual(string.Empty, model.Path);
-		Assert.AreEqual(0, model.Heigth);
+		Assert.AreEqual(0, model.Height);
 		Assert.AreEqual(0, model.Width);
 		Assert.AreEqual(0, model.Data.Length);
 		Assert.AreEqual(string.Empty, model.Hash);
@@ -37,7 +37,7 @@ public sealed class ImageModelTests
 
 		Assert.AreEqual("32.png", model.Name);
 		Assert.AreEqual(@"X:\Target\32.dds", model.Path);
-		Assert.AreEqual(32, model.Heigth);
+		Assert.AreEqual(32, model.Height);
 		Assert.AreEqual(32, model.Width);
 		Assert.AreEqual(3, model.Data.Length);
 		Assert.AreEqual("HASH", model.Hash);
@@ -49,7 +49,7 @@ public sealed class ImageModelTests
 		{
 			Name = "32.png";
 			Path = filePath;
-			Heigth = 32;
+			Height = 32;
 			Width = 32;
 			Data = [1, 2, 3];
 			Hash = "HASH";

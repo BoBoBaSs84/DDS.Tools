@@ -25,9 +25,9 @@ public interface IImageModel
 	string Path { get; }
 
 	/// <summary>
-	/// The heigth of the image.
+	/// The height of the image.
 	/// </summary>
-	int Heigth { get; }
+	int Height { get; }
 
 	/// <summary>
 	/// The width of the image.

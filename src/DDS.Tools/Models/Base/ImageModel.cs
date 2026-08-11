@@ -20,7 +20,7 @@ internal abstract class ImageModel : IImageModel
 	/// <inheritdoc/>
 	public string Path { get; protected set; } = string.Empty;
 	/// <inheritdoc/>
-	public int Heigth { get; protected set; } = default;
+	public int Height { get; protected set; } = default;
 	/// <inheritdoc/>
 	public int Width { get; protected set; } = default;
 	/// <inheritdoc/>
