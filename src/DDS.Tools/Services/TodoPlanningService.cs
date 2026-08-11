@@ -8,6 +8,7 @@
 using BB84.Extensions.Serialization;
 
 using DDS.Tools.Enumerators;
+using DDS.Tools.Extensions;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Models;
@@ -78,10 +79,10 @@ internal sealed class TodoPlanningService(
 	private void MapTodoFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, TodoModel todoFromJson)
 	{
 		string newFullPathName = _pathProvider
-			.Combine(settings.TargetFolder, todoFromJson.RelativePath, todoFromJson.FileName.Replace(GetTargetFileExtensions(imageType), $"{imageType}"));
+			.Combine(settings.TargetFolder, todoFromJson.RelativePath, todoFromJson.FileName.Replace($"{imageType.GetTargetType()}", $"{imageType}"));
 
 		TodoModel todo = new(
-			fileName: $"{todoFromJson.FileHash}.{GetTargetFileExtensions(imageType)}",
+			fileName: $"{todoFromJson.FileHash}.{imageType.GetTargetType()}",
 			relativePath: todoFromJson.RelativePath,
 			fullPathName: newFullPathName,
 			targetFolder: settings.TargetFolder,
@@ -90,12 +91,4 @@ internal sealed class TodoPlanningService(
 
 		todos.Enqueue(todo);
 	}
-
-	private static string GetTargetFileExtensions(ImageType imageType)
-		=> imageType switch
-		{
-			ImageType.DDS => $"{ImageType.PNG}",
-			ImageType.PNG => $"{ImageType.DDS}",
-			_ => throw new ArgumentOutOfRangeException(nameof(imageType), imageType, null)
-		};
 }
