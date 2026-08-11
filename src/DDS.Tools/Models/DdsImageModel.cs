@@ -33,6 +33,12 @@ namespace DDS.Tools.Models;
 /// <param name="logger">The logger service for logging operations and exceptions.</param>
 internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageModel> logger) : ImageModel, IImageModel
 {
+	/// <summary>The highest <see cref="PngCompressionLevel"/> value, the top of the input scale.</summary>
+	private const int MaxCompressionLevel = (int)PngCompressionLevel.BestCompression;
+
+	/// <summary>The highest SkiaSharp quality value, the top of the output scale.</summary>
+	private const int MaxSkiaQuality = 100;
+
 	private readonly DdsDecoder _ddsDecoder = decoder;
 	private readonly ILoggerService<DdsImageModel> _logger = logger;
 	private SKBitmap? _bitmap;
@@ -121,9 +127,9 @@ internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageM
 	}
 
 	/// <summary>
-	/// Maps a <see cref="PngCompressionLevel"/> value (0–9) to a SkiaSharp PNG quality value (0–100).
+	/// Maps a <see cref="PngCompressionLevel"/> value to a SkiaSharp PNG quality value.
 	/// SkiaSharp quality 100 means least compression; 0 means most compression.
 	/// </summary>
-	private static int MapCompressionLevelToQuality(PngCompressionLevel level) =>
-		(9 - (int)level) * 100 / 9;
+	private static int MapCompressionLevelToQuality(PngCompressionLevel level)
+		=> (MaxCompressionLevel - (int)level) * MaxSkiaQuality / MaxCompressionLevel;
 }

@@ -292,7 +292,7 @@ public sealed class TodoServiceTests
 	}
 
 	private TodoService CreateSut()
-	 => new(
+		=> new(
 			_loggerServiceMock.Object,
 			_directoryProviderMock.Object,
 			_fileProviderMock.Object,
