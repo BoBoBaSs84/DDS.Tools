@@ -47,66 +47,41 @@ internal sealed class TodoTransformationService(
 
 	private void GetTodoDone(TodoModel todo, ConvertSettingsBase settings, ImageType imageType, ISet<string> todosDone, ref int todosDuplicateCount)
 	{
-		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
+		if (DeduplicatesByHash(settings.ConvertMode) && todosDone.Contains(todo.FileHash))
 		{
-			if (todosDone.Contains(todo.FileHash))
-			{
-				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
-				todosDuplicateCount++;
-				return;
-			}
-		}
-		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
-		{
-			if (todosDone.Contains(todo.FileHash))
-			{
-				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
-				todosDuplicateCount++;
-				return;
-			}
-
-			CopyImage(settings, todo, imageType);
-			todosDone.Add(todo.FileHash);
+			AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
+			todosDuplicateCount++;
 			return;
 		}
 
-		SaveImage(settings, todo, imageType);
+		TransferImage(settings, todo, imageType);
 		todosDone.Add(todo.FileHash);
 	}
 
-	private void CopyImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
+	private void TransferImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
 	{
 		IImageModel image = _imageModelFactory(imageType);
 		image.Load(todo.FullPathName);
 
 		string targetFolder = PrepareTargetFolder(settings, image, todo);
-		DirectoryInfo directoryInfo = _directoryProvider.CreateDirectory(targetFolder);
 
-		if (directoryInfo.Exists)
+		if (!_directoryProvider.CreateDirectory(targetFolder).Exists)
+			return;
+
+		string newFileName = GetTargetFileName(settings, todo);
+
+		// The grouping mode copies the source untouched, every other mode re-encodes.
+		if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
 		{
-			string newFileName = GetTargetFileName(settings, todo);
-			string newFilePath = _pathProvider.Combine(targetFolder, newFileName);
-
-			_fileProvider.Copy(todo.FullPathName, newFilePath);
+			_fileProvider.Copy(todo.FullPathName, _pathProvider.Combine(targetFolder, newFileName));
+			return;
 		}
+
+		image.Save(_pathProvider.Combine(targetFolder, $"{newFileName}.{imageType.GetTargetType()}"), settings);
 	}
 
-	private void SaveImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
-	{
-		IImageModel image = _imageModelFactory(imageType);
-		image.Load(todo.FullPathName);
-
-		string targetFolder = PrepareTargetFolder(settings, image, todo);
-		DirectoryInfo directoryInfo = _directoryProvider.CreateDirectory(targetFolder);
-
-		if (directoryInfo.Exists)
-		{
-			string newFileName = $"{GetTargetFileName(settings, todo)}.{imageType.GetTargetType()}";
-			string newFilePath = _pathProvider.Combine(targetFolder, newFileName);
-
-			image.Save(newFilePath, settings);
-		}
-	}
+	private static bool DeduplicatesByHash(ConvertModeType convertMode)
+		=> convertMode is ConvertModeType.Automatic or ConvertModeType.Grouping;
 
 	private string PrepareTargetFolder(ConvertSettingsBase settings, IImageModel image, TodoModel todo)
 	{
