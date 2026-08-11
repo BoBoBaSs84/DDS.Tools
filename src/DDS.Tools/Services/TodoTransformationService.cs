@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
 using DDS.Tools.Enumerators;
+using DDS.Tools.Extensions;
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Models;
@@ -100,7 +101,7 @@ internal sealed class TodoTransformationService(
 
 		if (directoryInfo.Exists)
 		{
-			string newFileName = $"{GetTargetFileName(settings, todo)}.{GetTargetFileExtensions(imageType)}";
+			string newFileName = $"{GetTargetFileName(settings, todo)}.{imageType.GetTargetType()}";
 			string newFilePath = _pathProvider.Combine(targetFolder, newFileName);
 
 			image.Save(newFilePath, settings);
@@ -145,12 +146,4 @@ internal sealed class TodoTransformationService(
 
 		return todo.FileHash;
 	}
-
-	private static string GetTargetFileExtensions(ImageType imageType)
-		=> imageType switch
-		{
-			ImageType.DDS => $"{ImageType.PNG}",
-			ImageType.PNG => $"{ImageType.DDS}",
-			_ => throw new ArgumentOutOfRangeException(nameof(imageType), imageType, null)
-		};
 }
