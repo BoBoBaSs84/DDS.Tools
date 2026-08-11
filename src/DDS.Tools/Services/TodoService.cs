@@ -46,49 +46,45 @@ internal sealed class TodoService(
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
 	public TodoCollection GetTodos(ConvertSettingsBase settings, ImageType imageType)
-	{
-		try
-		{
-      return _todoPlanningService.GetTodos(settings, imageType);
-		}
-		catch (Exception ex)
-		{
-			_loggerService.Log(LogException, ex);
-			string message = Resources.ServiceException_Message.FormatInvariant(nameof(GetTodos));
-			throw new ServiceException(message, ex);
-		}
-	}
+		=> Execute(() => _todoPlanningService.GetTodos(settings, imageType), nameof(GetTodos));
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
 	public TodoCollection GetTodos(ConvertSettingsBase settings, ImageType imageType, string jsonFileContent)
-	{
-		try
-		{
-     return _todoPlanningService.GetTodos(settings, imageType, jsonFileContent);
-		}
-		catch (Exception ex)
-		{
-			_loggerService.Log(LogException, ex);
-			string message = Resources.ServiceException_Message.FormatInvariant(nameof(GetTodos));
-			throw new ServiceException(message, ex);
-		}
-	}
+		=> Execute(() => _todoPlanningService.GetTodos(settings, imageType, jsonFileContent), nameof(GetTodos));
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
 	public void GetTodosDone(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, bool jsonExists = false)
+		=> Execute(() =>
+		{
+			TodoProcessingResult result = _todoTransformationService.GetTodosDone(todos, settings, imageType);
+			_todoPersistenceService.PersistResult(todos, settings, jsonExists, result);
+		}, nameof(GetTodosDone));
+
+	/// <summary>
+	/// Executes the provided operation and translates any failure into a <see cref="ServiceException"/>.
+	/// </summary>
+	/// <typeparam name="TResult">The result type of the operation.</typeparam>
+	/// <param name="operation">The operation to execute.</param>
+	/// <param name="operationName">The name of the calling operation, used within the exception message.</param>
+	/// <returns>The result of the operation.</returns>
+	/// <exception cref="ServiceException">If the operation failed.</exception>
+	private TResult Execute<TResult>(Func<TResult> operation, string operationName)
 	{
 		try
 		{
-      TodoProcessingResult result = _todoTransformationService.GetTodosDone(todos, settings, imageType);
-			_todoPersistenceService.PersistResult(todos, settings, jsonExists, result);
+			return operation();
 		}
 		catch (Exception ex)
 		{
 			_loggerService.Log(LogException, ex);
-			string message = Resources.ServiceException_Message.FormatInvariant(nameof(GetTodosDone));
+			string message = Resources.ServiceException_Message.FormatInvariant(operationName);
 			throw new ServiceException(message, ex);
 		}
 	}
+
+	/// <inheritdoc cref="Execute{TResult}(Func{TResult}, string)"/>
+	private void Execute(Action operation, string operationName)
+		=> Execute<object?>(() => { operation(); return null; }, operationName);
 }
