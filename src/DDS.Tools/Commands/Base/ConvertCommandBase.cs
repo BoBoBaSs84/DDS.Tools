@@ -39,6 +39,7 @@ internal abstract class ConvertCommandBase<TSettings, TCommand>(
 	where TCommand : class
 {
 	private readonly ILoggerService<TCommand> _loggerService = loggerService;
+	private readonly ITodoService _todoService = todoService;
 	private readonly IDirectoryProvider _directoryProvider = directoryProvider;
 	private readonly IFileProvider _fileProvider = fileProvider;
 	private readonly IPathProvider _pathProvider = pathProvider;
@@ -64,39 +65,24 @@ internal abstract class ConvertCommandBase<TSettings, TCommand>(
 
 	protected int Action(ConvertSettingsBase settings, ImageType imageType)
 	{
-		TodoCollection todos;
-
 		if (!_directoryProvider.Exists(settings.SourceFolder))
 			throw new CommandException($"Directory '{settings.SourceFolder}' not found.");
 
+		// The result json is read from the source folder, but written to the target folder.
 		string jsonFilePath = _pathProvider.Combine(settings.SourceFolder, Constants.ResultFileName);
-		bool jsonExists = ResultJsonExists(jsonFilePath);
+		bool jsonExists = _fileProvider.Exists(jsonFilePath);
 
-		if (!jsonExists)
-		{
-			todos = todoService.GetTodos(settings, imageType);
-			return GetItDone(todoService, todos, settings, imageType, jsonExists);
-		}
-		else
-		{
-			string jsonFileContent = _fileProvider.ReadAllText(jsonFilePath);
-			todos = todoService.GetTodos(settings, imageType, jsonFileContent);
-			return GetItDone(todoService, todos, settings, imageType, jsonExists);
-		}
-	}
+		TodoCollection todos = jsonExists
+			? _todoService.GetTodos(settings, imageType, _fileProvider.ReadAllText(jsonFilePath))
+			: _todoService.GetTodos(settings, imageType);
 
-	private bool ResultJsonExists(string jsonFilePath)
-		=> _fileProvider.Exists(jsonFilePath);
-
-	private static int GetItDone(ITodoService todoService, TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, bool jsonExists)
-	{
 		if (todos.Count.Equals(0))
 		{
-			AnsiConsole.MarkupLine($"[yellow]There is nothing todo![/]");
+			AnsiConsole.MarkupLine("[yellow]There is nothing todo![/]");
 			return 1;
 		}
 
-		todoService.GetTodosDone(todos, settings, imageType, jsonExists);
+		_todoService.GetTodosDone(todos, settings, imageType, jsonExists);
 		return 0;
 	}
 }
