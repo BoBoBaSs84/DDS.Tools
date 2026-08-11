@@ -37,5 +37,5 @@ internal sealed class PngConvertCommand(
 
 	/// <inheritdoc/>
 	protected override int Execute([NotNull] CommandContext context, [NotNull] PngConvertSettings settings, CancellationToken cancellationToken)
-	 => ExecuteCommand(settings, Type);
+		=> ExecuteCommand(settings, Type);
 }

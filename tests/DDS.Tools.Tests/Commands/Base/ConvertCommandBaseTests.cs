@@ -112,7 +112,7 @@ public sealed class ConvertCommandBaseTests
 		IDirectoryProvider directoryProvider,
 		IFileProvider fileProvider,
 		IPathProvider pathProvider)
-	 : ConvertCommandBase<DdsConvertSettings, DdsConvertCommand>(loggerService, todoService, directoryProvider, fileProvider, pathProvider)
+		: ConvertCommandBase<DdsConvertSettings, DdsConvertCommand>(loggerService, todoService, directoryProvider, fileProvider, pathProvider)
 	{
 		public int InvokeAction(ConvertSettingsBase settings, ImageType imageType)
 			=> Action(settings, imageType);

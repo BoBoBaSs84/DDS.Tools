@@ -37,5 +37,5 @@ internal sealed class DdsConvertCommand(
 
 	/// <inheritdoc/>
 	protected override int Execute([NotNull] CommandContext context, [NotNull] DdsConvertSettings settings, CancellationToken cancellationToken)
-	 => ExecuteCommand(settings, Type);
+		=> ExecuteCommand(settings, Type);
 }
