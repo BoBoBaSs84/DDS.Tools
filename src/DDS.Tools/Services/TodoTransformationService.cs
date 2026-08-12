@@ -36,27 +36,31 @@ internal sealed class TodoTransformationService(
 
 	internal TodoProcessingResult GetTodosDone(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType)
 	{
-		HashSet<string> todosDone = [];
+		// The hash set only indexes what has been seen. Counting it would report distinct
+		// content rather than transferred files, which differ whenever a mode does not deduplicate.
+		HashSet<string> processedHashes = [];
+		int todosDoneCount = 0;
 		int todosDuplicateCount = 0;
 
 		foreach (TodoModel todo in todos)
-			GetTodoDone(todo, settings, imageType, todosDone, ref todosDuplicateCount);
-
-		return new(todosDone.Count, todosDuplicateCount);
-	}
-
-	private void GetTodoDone(TodoModel todo, ConvertSettingsBase settings, ImageType imageType, ISet<string> todosDone, ref int todosDuplicateCount)
-	{
-		if (DeduplicatesByHash(settings.ConvertMode) && todosDone.Contains(todo.FileHash))
 		{
-			AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
-			todosDuplicateCount++;
-			return;
+			if (IsDuplicate(todo, settings, processedHashes))
+			{
+				AnsiConsole.MarkupLine($"[yellow]'{todo.FullPathName}' is a duplicate![/]");
+				todosDuplicateCount++;
+				continue;
+			}
+
+			TransferImage(settings, todo, imageType);
+			processedHashes.Add(todo.FileHash);
+			todosDoneCount++;
 		}
 
-		TransferImage(settings, todo, imageType);
-		todosDone.Add(todo.FileHash);
+		return new(todosDoneCount, todosDuplicateCount);
 	}
+
+	private static bool IsDuplicate(TodoModel todo, ConvertSettingsBase settings, ISet<string> processedHashes)
+		=> DeduplicatesByHash(settings.ConvertMode) && processedHashes.Contains(todo.FileHash);
 
 	private void TransferImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
 	{
