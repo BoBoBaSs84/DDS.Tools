@@ -37,7 +37,8 @@ internal static class ServiceCollectionExtensions
 	{
 		services.RegisterLoggerService(environment);
 
-		services.AddSingleton<DdsEncoder>();
+		// The encoder carries per image output options, so it must not be shared.
+		services.AddTransient<DdsEncoder>();
 		services.AddSingleton<DdsDecoder>();
 		services.AddSingleton<ITodoService, TodoService>();
 
