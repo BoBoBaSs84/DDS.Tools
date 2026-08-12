@@ -1,12 +1,15 @@
 <Project>
+
 	<PropertyGroup>
-		<VersionMajor>$([System.DateTime]::UtcNow.Year)</VersionMajor>
-		<VersionMinor>$([System.DateTime]::UtcNow.Month)</VersionMinor>
-		<VersionPatch>$([System.DateTime]::UtcNow.Day)</VersionPatch>
+		<VersionMajor>$([System.DateTime]::UtcNow.Year.ToString("D4"))</VersionMajor>
+		<VersionMinor>$([System.DateTime]::UtcNow.Month.ToString("D2"))</VersionMinor>
+		<VersionPatch>$([System.DateTime]::UtcNow.Day.ToString("D2"))</VersionPatch>
 		<VersionRevision>$([System.DateTime]::UtcNow.TimeOfDay.TotalMinutes.ToString("0"))</VersionRevision>
 		<VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionPatch).$(VersionRevision)</VersionPrefix>
 		<VersionSuffix Condition="$(Configuration.Equals('Debug'))">Development</VersionSuffix>
+		<FileVersion>$(VersionMajor).$(VersionMinor).$(VersionPatch)</FileVersion>
 	</PropertyGroup>
+
 	<PropertyGroup>
 		<AllowUnsafeBlocks>False</AllowUnsafeBlocks>
 		<AnalysisLevel>latest</AnalysisLevel>
@@ -14,9 +17,11 @@
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
 		<Deterministic>True</Deterministic>
 		<EnableNETAnalyzers>True</EnableNETAnalyzers>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<GenerateAssemblyInfo>True</GenerateAssemblyInfo>
 		<DebugType>full</DebugType>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
@@ -24,12 +29,14 @@
 		<RunAnalyzersDuringBuild>True</RunAnalyzersDuringBuild>
 		<RunAnalyzersDuringLiveAnalysis>True</RunAnalyzersDuringLiveAnalysis>
 		<TargetFramework>net8.0</TargetFramework>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	</PropertyGroup>
+
 	<PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('Tests'))">
 		<Author>BoBoBaSs84</Author>
 		<Authors>$(Author)</Authors>
 		<Company>https://github.com/$(Author)</Company>
-		<Copyright>Copyright © $(VersionMajor) $(Author)</Copyright>
+		<Copyright>Copyright © $([System.DateTime]::UtcNow.Year) $(Author)</Copyright>
 		<Description> This is a simple DDS and PNG tool set that converts DDS images to PNG images and vice versa on a large scale. It has options for duplicate detection and sorting.</Description>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -40,21 +47,27 @@
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/$(Author)/$(Product)</RepositoryUrl>
 		<Title>$(AssemblyName)</Title>
+		<Trademark>$(Product)</Trademark>
 	</PropertyGroup>
+
 	<PropertyGroup Condition="$(Configuration.Equals('Release'))">
 		<DebugType>none</DebugType>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 	</PropertyGroup>
+
 	<PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
 	</PropertyGroup>
+
 	<ItemGroup Condition="!$(MSBuildProjectName.EndsWith('Tests'))">
 		<InternalsVisibleTo Include="$(AssemblyName).Tests" />
 		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
 	</ItemGroup>
+
 	<ItemGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
 		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 	</ItemGroup>
+
 </Project>

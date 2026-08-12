@@ -26,9 +26,12 @@ jobs:
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
 
       - name: Extract version from tag
         id: version
+        shell: bash
         run: |
           tagName="${GITHUB_REF#refs/tags/v}"
           echo "VERSION=$tagName" >> $GITHUB_OUTPUT
@@ -67,9 +70,10 @@ jobs:
           -p:FileVersion=${{ steps.version.outputs.VERSION }}
 
       - name: Archive published output
+        shell: pwsh
         run: |
-          mkdir -p ./artifacts
-          zip -j ./artifacts/DDS.Tools.${{ env.RUNTIME }}.${{ steps.version.outputs.VERSION }}.zip ./publish/*
+          New-Item -ItemType Directory -Path ./artifacts -Force | Out-Null
+          Compress-Archive -Path ./publish/* -DestinationPath ./artifacts/DDS.Tools.${{ env.RUNTIME }}.${{ steps.version.outputs.VERSION }}.zip -Force
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
