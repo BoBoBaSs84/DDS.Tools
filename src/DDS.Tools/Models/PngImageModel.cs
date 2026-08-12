@@ -36,7 +36,6 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 {
 	private readonly DdsEncoder _ddsEncoder = encoder;
 	private readonly ILoggerService<PngImageModel> _logger = logger;
-	private SKBitmap? _bitmap;
 
 	private static readonly Action<ILogger, string, Exception?> LogExceptionWithParams =
 		LoggerMessage.Define<string>(LogLevel.Error, 0, "Exception occured. Params = {Parameters}");
@@ -66,16 +65,16 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 			// Ensure the bitmap is in Rgba8888 format so BCnEncoder receives the expected byte layout.
 			if (decoded.ColorType != SKColorType.Rgba8888)
 			{
-				_bitmap = decoded.Copy(SKColorType.Rgba8888);
+				Bitmap = decoded.Copy(SKColorType.Rgba8888);
 				decoded.Dispose();
 			}
 			else
 			{
-				_bitmap = decoded;
+				Bitmap = decoded;
 			}
 
-			Width = _bitmap.Width;
-			Height = _bitmap.Height;
+			Width = Bitmap.Width;
+			Height = Bitmap.Height;
 		}
 		catch (Exception ex)
 		{
@@ -99,17 +98,17 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 
 			// Both options must be assigned on every save. Setting the format only for
 			// transparent images would leak it into every following image of the run.
-			_ddsEncoder.OutputOptions.Format = _bitmap is not null && HasTransparency(_bitmap)
+			_ddsEncoder.OutputOptions.Format = Bitmap is not null && HasTransparency(Bitmap)
 				? CompressionFormat.Bc3
 				: CompressionFormat.Bc1;
 
 			_ddsEncoder.OutputOptions.Quality = pngSettings.Compression;
 
 			// Extract raw RGBA bytes from the bitmap and encode to DDS using BCnEncoder's raw API.
-			byte[] rgbaBytes = new byte[_bitmap!.ByteCount];
-			Marshal.Copy(_bitmap.GetPixels(), rgbaBytes, 0, rgbaBytes.Length);
+			byte[] rgbaBytes = new byte[Bitmap!.ByteCount];
+			Marshal.Copy(Bitmap.GetPixels(), rgbaBytes, 0, rgbaBytes.Length);
 
-			DdsFile ddsFile = _ddsEncoder.EncodeToDds(rgbaBytes, _bitmap.Width, _bitmap.Height, PixelFormat.Rgba32);
+			DdsFile ddsFile = _ddsEncoder.EncodeToDds(rgbaBytes, Bitmap.Width, Bitmap.Height, PixelFormat.Rgba32);
 			using FileStream fileStream = File.OpenWrite(filePath);
 			ddsFile.Write(fileStream);
 		}

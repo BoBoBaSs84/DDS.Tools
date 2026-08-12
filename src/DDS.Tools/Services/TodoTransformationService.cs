@@ -60,7 +60,7 @@ internal sealed class TodoTransformationService(
 
 	private void TransferImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
 	{
-		IImageModel image = _imageModelFactory(imageType);
+		using IImageModel image = _imageModelFactory(imageType);
 		image.Load(todo.FullPathName);
 
 		string targetFolder = PrepareTargetFolder(settings, image, todo);

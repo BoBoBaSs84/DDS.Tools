@@ -62,7 +62,7 @@ internal sealed class TodoPlanningService(
 	{
 		FileInfo fileInfo = new(file);
 
-		IImageModel image = _imageModelFactory(imageType);
+		using IImageModel image = _imageModelFactory(imageType);
 		image.Load(file);
 
 		TodoModel todo = new(

@@ -34,7 +34,7 @@ public sealed class PngImageModelTests : UnitTestBase
 	[TestMethod]
 	public void LoadTest()
 	{
-		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.PNG);
+		using IImageModel image = CreateImageModel();
 
 		image.Load(FilePath);
 
@@ -49,7 +49,7 @@ public sealed class PngImageModelTests : UnitTestBase
 	[TestMethod]
 	public void LoadExceptionTest()
 	{
-		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.PNG);
+		using IImageModel image = CreateImageModel();
 		image?.Load(@"D:\");
 	}
 
@@ -61,7 +61,7 @@ public sealed class PngImageModelTests : UnitTestBase
 			SourceFolder = TestConstants.PngResourcePath,
 			TargetFolder = TestConstants.ResourcePath,
 		};
-		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.PNG);
+		using IImageModel image = CreateImageModel();
 		image.Load(FilePath);
 
 		image.Save(NewFilePath, settings);
@@ -105,6 +105,9 @@ public sealed class PngImageModelTests : UnitTestBase
 		}
 	}
 
+	private static IImageModel CreateImageModel()
+		=> ServiceProvider.GetRequiredService<Func<ImageType, IImageModel>>()(ImageType.PNG);
+
 	/// <summary>
 	/// Reads the four character code of the pixel format from a dds file header.
 	/// </summary>
@@ -130,7 +133,7 @@ public sealed class PngImageModelTests : UnitTestBase
 			SourceFolder = TestConstants.PngResourcePath,
 			TargetFolder = TestConstants.ResourcePath,
 		};
-		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.PNG);
+		using IImageModel image = CreateImageModel();
 		image.Load(FilePath);
 
 		image.Save(FilePath, settings);

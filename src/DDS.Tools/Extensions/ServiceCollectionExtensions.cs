@@ -46,11 +46,15 @@ internal static class ServiceCollectionExtensions
 		services.AddSingleton<IFileProvider, FileProvider>();
 		services.AddSingleton<IPathProvider, PathProvider>();
 
-		services.AddKeyedTransient<IImageModel, PngImageModel>(ImageType.PNG);
-		services.AddKeyedTransient<IImageModel, DdsImageModel>(ImageType.DDS);
-
-		services.AddSingleton<Func<ImageType, IImageModel>>(serviceProvider
-			=> imageType => serviceProvider.GetRequiredKeyedService<IImageModel>(imageType));
+		// Image models are disposable and created per file. Resolving them from the container
+		// would enroll every instance in the root scope's disposal tracking and keep the native
+		// image memory alive for the whole run, so they are activated with the caller owning them.
+		services.AddSingleton<Func<ImageType, IImageModel>>(serviceProvider => imageType => imageType switch
+		{
+			ImageType.PNG => ActivatorUtilities.CreateInstance<PngImageModel>(serviceProvider),
+			ImageType.DDS => ActivatorUtilities.CreateInstance<DdsImageModel>(serviceProvider),
+			_ => throw new ArgumentOutOfRangeException(nameof(imageType), imageType, null)
+		});
 
 		return services;
 	}
