@@ -74,7 +74,7 @@ public sealed class TodoServiceTests
 		_imageModelMock.Verify(x => x.Load(It.IsAny<string>()), Times.Exactly(2));
 	}
 
-	[DataTestMethod]
+	[TestMethod]
 	[DataRow("relative", DisplayName = "Relative source folder")]
 	[DataRow("trailing", DisplayName = "Trailing directory separator")]
 	[DataRow("casing", DisplayName = "Differing casing")]

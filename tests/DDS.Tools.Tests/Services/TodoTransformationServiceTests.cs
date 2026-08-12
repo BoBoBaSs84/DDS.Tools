@@ -39,7 +39,7 @@ public sealed class TodoTransformationServiceTests
 		Assert.AreEqual(0, result.DuplicatesCount);
 	}
 
-	[DataTestMethod]
+	[TestMethod]
 	[DataRow(ConvertModeType.Automatic)]
 	[DataRow(ConvertModeType.Grouping)]
 	public void GetTodosDoneCountsDuplicatesSeparately(ConvertModeType convertMode)
