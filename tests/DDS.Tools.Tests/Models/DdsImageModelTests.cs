@@ -30,7 +30,7 @@ public class DdsImageModelTests : UnitTestBase
 	[TestMethod]
 	public void LoadTest()
 	{
-		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.DDS);
+		using IImageModel image = CreateImageModel();
 
 		image.Load(FilePath);
 
@@ -45,7 +45,7 @@ public class DdsImageModelTests : UnitTestBase
 	[TestMethod]
 	public void LoadExceptionTest()
 	{
-		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.DDS);
+		using IImageModel image = CreateImageModel();
 		image?.Load(@"D:\");
 	}
 
@@ -57,7 +57,7 @@ public class DdsImageModelTests : UnitTestBase
 			SourceFolder = TestConstants.DdsResourcePath,
 			TargetFolder = TestConstants.ResourcePath,
 		};
-		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.DDS);
+		using IImageModel image = CreateImageModel();
 		image.Load(FilePath);
 
 		image.Save(NewFilePath, settings);
@@ -73,9 +73,12 @@ public class DdsImageModelTests : UnitTestBase
 			SourceFolder = TestConstants.DdsResourcePath,
 			TargetFolder = TestConstants.ResourcePath,
 		};
-		IImageModel image = ServiceProvider.GetRequiredKeyedService<IImageModel>(ImageType.DDS);
+		using IImageModel image = CreateImageModel();
 		image.Load(FilePath);
 
 		image.Save(FilePath, settings);
 	}
+
+	private static IImageModel CreateImageModel()
+		=> ServiceProvider.GetRequiredService<Func<ImageType, IImageModel>>()(ImageType.DDS);
 }

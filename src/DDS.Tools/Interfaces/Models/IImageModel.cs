@@ -12,7 +12,10 @@ namespace DDS.Tools.Interfaces.Models;
 /// <summary>
 /// The image file interface.
 /// </summary>
-public interface IImageModel
+/// <remarks>
+/// Implementations hold native image memory, so instances must be disposed once processed.
+/// </remarks>
+public interface IImageModel : IDisposable
 {
 	/// <summary>
 	/// The file name of the image.

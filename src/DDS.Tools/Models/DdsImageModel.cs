@@ -41,7 +41,6 @@ internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageM
 
 	private readonly DdsDecoder _ddsDecoder = decoder;
 	private readonly ILoggerService<DdsImageModel> _logger = logger;
-	private SKBitmap? _bitmap;
 
 	private static readonly Action<ILogger, string, Exception?> LogExceptionWithParams =
 		LoggerMessage.Define<string>(LogLevel.Error, 0, "Exception occured. Params = {Parameters}");
@@ -80,8 +79,8 @@ internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageM
 			}
 
 			var info = new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
-			_bitmap = new SKBitmap(info);
-			Marshal.Copy(rgbaBytes, 0, _bitmap.GetPixels(), rgbaBytes.Length);
+			Bitmap = new SKBitmap(info);
+			Marshal.Copy(rgbaBytes, 0, Bitmap.GetPixels(), rgbaBytes.Length);
 
 			Width = width;
 			Height = height;
@@ -115,7 +114,7 @@ internal sealed class DdsImageModel(DdsDecoder decoder, ILoggerService<DdsImageM
 			// Map PngCompressionLevel (0–9) to SkiaSharp PNG quality (100 = no compression, 0 = max compression).
 			int quality = MapCompressionLevelToQuality(ddsSettings.Compression);
 
-			using SKImage skImage = SKImage.FromBitmap(_bitmap);
+			using SKImage skImage = SKImage.FromBitmap(Bitmap);
 			using SKData encoded = skImage.Encode(SKEncodedImageFormat.Png, quality);
 			encoded.SaveTo(fileStream);
 		}

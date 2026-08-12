@@ -8,6 +8,8 @@
 using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Settings.Base;
 
+using SkiaSharp;
+
 namespace DDS.Tools.Models.Base;
 
 /// <summary>
@@ -15,6 +17,11 @@ namespace DDS.Tools.Models.Base;
 /// </summary>
 internal abstract class ImageModel : IImageModel
 {
+	/// <summary>
+	/// The decoded image, backed by native memory that is released on <see cref="Dispose"/>.
+	/// </summary>
+	protected SKBitmap? Bitmap { get; set; }
+
 	/// <inheritdoc/>
 	public string Name { get; protected set; } = string.Empty;
 	/// <inheritdoc/>
@@ -33,4 +40,12 @@ internal abstract class ImageModel : IImageModel
 
 	/// <inheritdoc/>
 	public abstract void Save(string filePath, ConvertSettingsBase settings);
+
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Bitmap?.Dispose();
+		Bitmap = null;
+		GC.SuppressFinalize(this);
+	}
 }

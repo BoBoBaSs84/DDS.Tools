@@ -9,6 +9,8 @@ using DDS.Tools.Models.Base;
 using DDS.Tools.Settings;
 using DDS.Tools.Settings.Base;
 
+using SkiaSharp;
+
 namespace DDS.Tools.Tests.Models;
 
 [TestClass]
@@ -43,8 +45,35 @@ public sealed class ImageModelTests
 		Assert.AreEqual("HASH", model.Hash);
 	}
 
+	[TestMethod]
+	public void ImageModelDisposeReleasesBitmapTest()
+	{
+		TestImageModel model = new();
+		model.Load(@"X:\Source\32.png");
+
+		SKBitmap bitmap = model.LoadedBitmap!;
+		Assert.AreNotEqual(IntPtr.Zero, bitmap.Handle);
+
+		model.Dispose();
+
+		Assert.AreEqual(IntPtr.Zero, bitmap.Handle);
+		Assert.IsNull(model.LoadedBitmap);
+	}
+
+	[TestMethod]
+	public void ImageModelDisposeIsRepeatableTest()
+	{
+		TestImageModel model = new();
+		model.Load(@"X:\Source\32.png");
+
+		model.Dispose();
+		model.Dispose();
+	}
+
 	private sealed class TestImageModel : ImageModel
 	{
+		public SKBitmap? LoadedBitmap => Bitmap;
+
 		public override void Load(string filePath)
 		{
 			Name = "32.png";
@@ -53,6 +82,7 @@ public sealed class ImageModelTests
 			Width = 32;
 			Data = [1, 2, 3];
 			Hash = "HASH";
+			Bitmap = new SKBitmap(32, 32);
 		}
 
 		public override void Save(string filePath, ConvertSettingsBase settings)
