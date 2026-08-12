@@ -74,6 +74,43 @@ public sealed class TodoServiceTests
 		_imageModelMock.Verify(x => x.Load(It.IsAny<string>()), Times.Exactly(2));
 	}
 
+	[DataTestMethod]
+	[DataRow("relative", DisplayName = "Relative source folder")]
+	[DataRow("trailing", DisplayName = "Trailing directory separator")]
+	[DataRow("casing", DisplayName = "Differing casing")]
+	public void GetTodosNormalizesSourceFolderForTheRelativePath(string variant)
+	{
+		ConfigureCommonMocks();
+
+		// Rooted below the current directory so the relative variant really is relative.
+		// GetRelativePath falls back to an absolute path when the two sit on different drives.
+		string rootPath = Path.Combine(Environment.CurrentDirectory, $"dds-tools-tests-{Guid.NewGuid():N}");
+		string sourceFolder = Path.Combine(rootPath, "source");
+
+		PngConvertSettings settings = new()
+		{
+			SourceFolder = variant switch
+			{
+				// A relative folder never matches the absolute directory of a discovered file.
+				"relative" => Path.GetRelativePath(Environment.CurrentDirectory, sourceFolder),
+				"trailing" => $"{sourceFolder}{Path.DirectorySeparatorChar}",
+				_ => sourceFolder.ToUpperInvariant()
+			},
+			TargetFolder = Path.Combine(rootPath, "target"),
+			ConvertMode = ConvertModeType.Manual
+		};
+
+		_directoryProviderMock
+			.Setup(x => x.GetFiles(settings.SourceFolder, "*.DDS", SearchOption.AllDirectories))
+			.Returns([Path.Combine(sourceFolder, "Blue", "64.DDS")]);
+
+		TodoService sut = CreateSut();
+
+		TodoCollection result = sut.GetTodos(settings, ImageType.DDS);
+
+		Assert.AreEqual($"{Path.DirectorySeparatorChar}Blue", result.Single().RelativePath);
+	}
+
 	[TestMethod]
 	public void GetTodosFromJsonReturnsMappedTodos()
 	{
@@ -312,6 +349,14 @@ public sealed class TodoServiceTests
 		_directoryProviderMock
 			.Setup(x => x.CreateDirectory(It.IsAny<string>()))
 			.Returns((string path) => Directory.CreateDirectory(path));
+
+		_pathProviderMock
+			.Setup(x => x.GetFullPath(It.IsAny<string>()))
+			.Returns((string path) => Path.GetFullPath(path));
+
+		_pathProviderMock
+			.Setup(x => x.TrimEndingDirectorySeparator(It.IsAny<string>()))
+			.Returns((string path) => Path.TrimEndingDirectorySeparator(path));
 	}
 
 	private static PngConvertSettings CreateSettings(ConvertModeType convertMode)

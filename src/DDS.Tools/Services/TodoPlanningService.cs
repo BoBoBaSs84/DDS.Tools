@@ -40,8 +40,12 @@ internal sealed class TodoPlanningService(
 		if (files.Length.Equals(0))
 			return todos;
 
+		// The source folder may be relative or carry a trailing separator, while the file
+		// information always reports an absolute path, so normalize before relating the two.
+		string sourceFolder = _pathProvider.TrimEndingDirectorySeparator(_pathProvider.GetFullPath(settings.SourceFolder));
+
 		foreach (string file in files)
-			MapTodoFromFile(todos, settings, imageType, file);
+			MapTodoFromFile(todos, settings, sourceFolder, imageType, file);
 
 		return todos;
 	}
@@ -58,7 +62,7 @@ internal sealed class TodoPlanningService(
 		return todos;
 	}
 
-	private void MapTodoFromFile(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, string file)
+	private void MapTodoFromFile(TodoCollection todos, ConvertSettingsBase settings, string sourceFolder, ImageType imageType, string file)
 	{
 		FileInfo fileInfo = new(file);
 
@@ -67,7 +71,7 @@ internal sealed class TodoPlanningService(
 
 		TodoModel todo = new(
 			fileName: fileInfo.Name,
-			relativePath: $"{fileInfo.DirectoryName?.Replace(settings.SourceFolder, string.Empty)}",
+			relativePath: $"{fileInfo.DirectoryName?.Replace(sourceFolder, string.Empty, StringComparison.OrdinalIgnoreCase)}",
 			fullPathName: fileInfo.FullName,
 			targetFolder: settings.TargetFolder,
 			fileHash: image.Hash
