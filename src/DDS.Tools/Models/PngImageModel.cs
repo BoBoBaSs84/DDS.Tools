@@ -97,8 +97,11 @@ internal sealed class PngImageModel(DdsEncoder encoder, ILoggerService<PngImageM
 			if (fileInfo.Exists)
 				throw new ArgumentException($"Already exists: '{filePath}'");
 
-			if (_bitmap is not null && HasTransparency(_bitmap))
-				_ddsEncoder.OutputOptions.Format = CompressionFormat.Bc3;
+			// Both options must be assigned on every save. Setting the format only for
+			// transparent images would leak it into every following image of the run.
+			_ddsEncoder.OutputOptions.Format = _bitmap is not null && HasTransparency(_bitmap)
+				? CompressionFormat.Bc3
+				: CompressionFormat.Bc1;
 
 			_ddsEncoder.OutputOptions.Quality = pngSettings.Compression;
 
