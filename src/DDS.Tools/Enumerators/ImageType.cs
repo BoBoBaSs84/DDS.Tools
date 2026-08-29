@@ -20,5 +20,15 @@ public enum ImageType : byte
 	/// <summary>
 	/// The portable network  graphics image type.
 	/// </summary>
-	PNG = 2
+	PNG = 2,
+
+	/// <summary>
+	/// The truevision TGA (targa) image type.
+	/// </summary>
+	TGA = 3,
+
+	/// <summary>
+	/// The JPEG image type.
+	/// </summary>
+	JPG = 4
 }

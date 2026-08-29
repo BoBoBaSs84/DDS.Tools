@@ -1,5 +1,2 @@
 <Project>
-	<Target Name="RemoveSkiaPdbAfterPublish" AfterTargets="Publish">
-		<Delete Files="$(PublishDir)libSkiaSharp.pdb" />
-	</Target>
 </Project>

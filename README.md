@@ -17,25 +17,21 @@ I needed some tools that were able to do some slight lifting so I can do some mo
 
 ## Features
 
-- **DDS → PNG** conversion of DDS texture files on a large scale
-- **PNG → DDS** conversion of PNG image files on a large scale
+- Convert whole folders of textures between **DDS**, **PNG**, **TGA** and **JPEG** on a large scale
+- Source format is auto-detected from the folder, or set explicitly with `--from`
 - Duplicate detection via a persisted result JSON file
 - Optional **retain structure** mode to preserve original folder and file names
 - Optional **separate by size** mode to sort textures into sub-folders by resolution
-- Configurable compression level for both output formats
+- Configurable compression effort for the written images
 - Three convert modes: `Automatic`, `Manual`, and `Grouping`
 - Interactive CLI with progress spinner powered by [Spectre.Console](https://spectreconsole.net/)
 
+Image encoding and decoding is handled by [DirectXTex](https://github.com/microsoft/DirectXTex),
+so DDS.Tools is a **Windows-only** tool.
+
 ## Usage
 
-DDS.Tools <command> [arguments] [options]
-
-### Commands
-
-| Command | Description                       |
-| ------- | --------------------------------- |
-| `dds`   | Converts DDS files into PNG files |
-| `png`   | Converts PNG files into DDS files |
+DDS.Tools convert <SourceFolder> <TargetFolder> [ConvertMode] --to <format> [options]
 
 ### Arguments
 
@@ -47,11 +43,13 @@ DDS.Tools <command> [arguments] [options]
 
 ### Options
 
-| Option                | Description                                          |
-| --------------------- | ---------------------------------------------------- |
-| `-r`, `--retain`      | Retain original folder and file names                |
-| `-b`, `--bysize`      | Separate converted textures into sub-folders by size |
-| `-c`, `--compression` | Compression level for the output images              |
+| Option                | Description                                                          |
+| --------------------- | ------------------------------------------------------------------- |
+| `-f`, `--from`        | Source image format (`DDS`, `PNG`, `TGA`, `JPG`). Inferred from the folder if omitted |
+| `-t`, `--to`          | Target image format (`DDS`, `PNG`, `TGA`, `JPG`). Required          |
+| `-r`, `--retain`      | Retain original folder and file names                              |
+| `-b`, `--bysize`      | Separate converted textures into sub-folders by size               |
+| `-c`, `--compression` | Compression effort: `None`, `Fast`, `Balanced`, `Maximum`          |
 
 ### Convert Modes
 
@@ -66,25 +64,31 @@ DDS.Tools <command> [arguments] [options]
 #### Convert DDS textures to PNG
 
 ```pwsh
-DDS.Tools dds "D:\DDS-Textures" "D:\PNG-Textures"
+DDS.Tools convert "D:\DDS-Textures" "D:\PNG-Textures" --to PNG
 ```
 
 #### Convert PNG images to DDS
 
 ```pwsh
-DDS.Tools png "D:\PNG-Textures" "D:\DDS-Textures"
+DDS.Tools convert "D:\PNG-Textures" "D:\DDS-Textures" --from PNG --to DDS
 ```
 
 #### Convert DDS to PNG retaining folder structure, separated by size
 
 ```pwsh
-DDS.Tools dds "D:\DDS-Textures" "D:\PNG-Textures" --retain --bysize
+DDS.Tools convert "D:\DDS-Textures" "D:\PNG-Textures" Manual --to PNG --retain --bysize
 ```
 
-#### Convert PNG to DDS with a specific compression quality
+#### Convert PNG to DDS with maximum compression
 
 ```pwsh
-DDS.Tools png "D:\PNG-Textures" "D:\DDS-Textures" --compression BestQuality
+DDS.Tools convert "D:\PNG-Textures" "D:\DDS-Textures" --from PNG --to DDS --compression Maximum
+```
+
+#### Convert TGA source textures to DDS
+
+```pwsh
+DDS.Tools convert "D:\TGA-Textures" "D:\DDS-Textures" --to DDS
 ```
 
 ## Contributing

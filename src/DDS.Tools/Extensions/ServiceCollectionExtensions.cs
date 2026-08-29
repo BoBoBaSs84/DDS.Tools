@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Copyright:	Robert Peter Meyer
 // License:		MIT
 //
@@ -8,10 +8,10 @@
 using System.Diagnostics.CodeAnalysis;
 
 using DDS.Tools.Enumerators;
-using DDS.Tools.Interfaces.Models;
+using DDS.Tools.Imaging;
+using DDS.Tools.Interfaces.Imaging;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
-using DDS.Tools.Models;
 using DDS.Tools.Providers;
 using DDS.Tools.Services;
 
@@ -28,33 +28,40 @@ namespace DDS.Tools.Extensions;
 internal static class ServiceCollectionExtensions
 {
 	/// <summary>
+	/// The image formats a codec is registered for.
+	/// </summary>
+	private static readonly ImageType[] SupportedFormats = [ImageType.DDS, ImageType.PNG, ImageType.TGA, ImageType.JPG];
+
+	/// <summary>
 	/// Registers the application services to the service collection.
 	/// </summary>
 	/// <param name="services">The service collection to enrich.</param>
 	/// <param name="environment">The host environment instance to use.</param>
-	/// <returns>The enriched service collection.</returns>	
+	/// <returns>The enriched service collection.</returns>
 	internal static IServiceCollection RegisterServices(this IServiceCollection services, IHostEnvironment environment)
 	{
 		services.RegisterLoggerService(environment);
+		services.RegisterImageCodecs();
 
-		// The encoder carries per image output options, so it must not be shared.
-		services.AddTransient<DdsEncoder>();
-		services.AddSingleton<DdsDecoder>();
 		services.AddSingleton<ITodoService, TodoService>();
 
 		services.AddSingleton<IDirectoryProvider, DirectoryProvider>();
 		services.AddSingleton<IFileProvider, FileProvider>();
 		services.AddSingleton<IPathProvider, PathProvider>();
 
-		// Image models are disposable and created per file. Resolving them from the container
-		// would enroll every instance in the root scope's disposal tracking and keep the native
-		// image memory alive for the whole run, so they are activated with the caller owning them.
-		services.AddSingleton<Func<ImageType, IImageModel>>(serviceProvider => imageType => imageType switch
+		return services;
+	}
+
+	private static IServiceCollection RegisterImageCodecs(this IServiceCollection services)
+	{
+		foreach (ImageType format in SupportedFormats)
 		{
-			ImageType.PNG => ActivatorUtilities.CreateInstance<PngImageModel>(serviceProvider),
-			ImageType.DDS => ActivatorUtilities.CreateInstance<DdsImageModel>(serviceProvider),
-			_ => throw new ArgumentOutOfRangeException(nameof(imageType), imageType, null)
-		});
+			DirectXTexCodec codec = new(format);
+			services.AddSingleton<IImageDecoder>(codec);
+			services.AddSingleton<IImageEncoder>(codec);
+		}
+
+		services.AddSingleton<IImageCodecRegistry, ImageCodecRegistry>();
 
 		return services;
 	}

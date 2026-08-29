@@ -2,14 +2,14 @@
   "profiles": {
     "DDS.Tools.DEV.DDS": {
       "commandName": "Project",
-      "commandLineArgs": "dds \"D:\\Modding\\DDS\" \"D:\\Modding\\PNGResult\"",
+      "commandLineArgs": "convert \"D:\\Modding\\DDS\" \"D:\\Modding\\PNGResult\" --to PNG",
       "environmentVariables": {
         "DOTNET_ENVIROMENT": "Development"
       }
     },
     "DDS.Tools.DEV.PNG": {
       "commandName": "Project",
-      "commandLineArgs": "png \"D:\\Modding\\PNG\" \"D:\\Modding\\DDSResult\"",
+      "commandLineArgs": "convert \"D:\\Modding\\PNG\" \"D:\\Modding\\DDSResult\" --from PNG --to DDS",
       "environmentVariables": {
         "DOTNET_ENVIROMENT": "Development"
       }

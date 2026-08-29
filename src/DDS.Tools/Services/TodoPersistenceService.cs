@@ -11,7 +11,7 @@ using DDS.Tools.Common;
 using DDS.Tools.Enumerators;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Models;
-using DDS.Tools.Settings.Base;
+using DDS.Tools.Settings;
 
 using Spectre.Console;
 
@@ -27,7 +27,7 @@ internal sealed class TodoPersistenceService(IFileProvider fileProvider, IPathPr
 	private readonly IFileProvider _fileProvider = fileProvider;
 	private readonly IPathProvider _pathProvider = pathProvider;
 
-	internal void PersistResult(TodoCollection todos, ConvertSettingsBase settings, bool jsonExists, TodoProcessingResult result)
+	internal void PersistResult(TodoCollection todos, ConvertSettings settings, bool jsonExists, TodoProcessingResult result)
 	{
 		if (!jsonExists && settings.ConvertMode.Equals(ConvertModeType.Automatic))
 		{

@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Copyright:	Robert Peter Meyer
 // License:		MIT
 //
@@ -22,13 +22,10 @@ internal static class ConfiguratorExtensions
 {
 	internal static IConfigurator ConfigureCommands(this IConfigurator configurator)
 	{
-		configurator.AddCommand<DdsConvertCommand>("dds")
-			.WithDescription("Converts dds files into png files.")
-			.WithExample(["dds", @"""D:\DDS-Textures""", @"""D:\PNG-Textures"""]);
-
-		configurator.AddCommand<PngConvertCommand>("png")
-			.WithDescription("Converts png files into dds files.")
-			.WithExample(["png", @"""D:\PNG-Textures""", @"""D:\DDS-Textures"""]);
+		configurator.AddCommand<ConvertCommand>("convert")
+			.WithDescription("Converts image files from one format into another.")
+			.WithExample(["convert", @"""D:\DDS-Textures""", @"""D:\PNG-Textures""", "--to", "PNG"])
+			.WithExample(["convert", @"""D:\PNG-Textures""", @"""D:\DDS-Textures""", "--from", "PNG", "--to", "DDS"]);
 
 		return configurator;
 	}

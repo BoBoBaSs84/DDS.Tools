@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Copyright:	Robert Peter Meyer
 // License:		MIT
 //
@@ -8,37 +8,35 @@
 using DDS.Tools.Common;
 using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
+using DDS.Tools.Extensions;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
-using DDS.Tools.Settings.Base;
+using DDS.Tools.Settings;
 
 using Microsoft.Extensions.Logging;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace DDS.Tools.Commands.Base;
+namespace DDS.Tools.Commands;
 
 /// <summary>
-/// The convert command base class.
+/// The convert command class.
 /// </summary>
-/// <inheritdoc/>
 /// <param name="loggerService">The logger service instance to use.</param>
 /// <param name="todoService">The todo service instance to use.</param>
 /// <param name="directoryProvider">The directory provider instance to use.</param>
 /// <param name="fileProvider">The file provider instance to use.</param>
 /// <param name="pathProvider">The path provider instance to use.</param>
-internal abstract class ConvertCommandBase<TSettings, TCommand>(
-	ILoggerService<TCommand> loggerService,
+internal sealed class ConvertCommand(
+	ILoggerService<ConvertCommand> loggerService,
 	ITodoService todoService,
 	IDirectoryProvider directoryProvider,
 	IFileProvider fileProvider,
-	IPathProvider pathProvider) : Command<TSettings>
-	where TSettings : CommandSettings
-	where TCommand : class
+	IPathProvider pathProvider) : Command<ConvertSettings>
 {
-	private readonly ILoggerService<TCommand> _loggerService = loggerService;
+	private readonly ILoggerService<ConvertCommand> _loggerService = loggerService;
 	private readonly ITodoService _todoService = todoService;
 	private readonly IDirectoryProvider _directoryProvider = directoryProvider;
 	private readonly IFileProvider _fileProvider = fileProvider;
@@ -47,13 +45,14 @@ internal abstract class ConvertCommandBase<TSettings, TCommand>(
 	private static readonly Action<ILogger, Exception?> LogException =
 		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
 
-	protected int ExecuteCommand(ConvertSettingsBase settings, ImageType imageType)
+	/// <inheritdoc/>
+	protected override int Execute(CommandContext context, ConvertSettings settings, CancellationToken cancellationToken)
 	{
 		try
 		{
 			return AnsiConsole.Status()
 				.Spinner(Spinner.Known.Line)
-				.Start("Processing..", action => Action(settings, imageType));
+				.Start("Processing..", _ => Action(settings));
 		}
 		catch (Exception ex)
 		{
@@ -63,18 +62,20 @@ internal abstract class ConvertCommandBase<TSettings, TCommand>(
 		}
 	}
 
-	protected int Action(ConvertSettingsBase settings, ImageType imageType)
+	internal int Action(ConvertSettings settings)
 	{
 		if (!_directoryProvider.Exists(settings.SourceFolder))
 			throw new CommandException($"Directory '{settings.SourceFolder}' not found.");
+
+		settings.From ??= InferSourceFormat(settings.SourceFolder);
 
 		// The result json is read from the source folder, but written to the target folder.
 		string jsonFilePath = _pathProvider.Combine(settings.SourceFolder, Constants.ResultFileName);
 		bool jsonExists = _fileProvider.Exists(jsonFilePath);
 
 		TodoCollection todos = jsonExists
-			? _todoService.GetTodos(settings, imageType, _fileProvider.ReadAllText(jsonFilePath))
-			: _todoService.GetTodos(settings, imageType);
+			? _todoService.GetTodos(settings, _fileProvider.ReadAllText(jsonFilePath))
+			: _todoService.GetTodos(settings);
 
 		if (todos.Count.Equals(0))
 		{
@@ -82,7 +83,23 @@ internal abstract class ConvertCommandBase<TSettings, TCommand>(
 			return 1;
 		}
 
-		_todoService.GetTodosDone(todos, settings, imageType, jsonExists);
+		_todoService.GetTodosDone(todos, settings, jsonExists);
 		return 0;
 	}
+
+	private ImageType InferSourceFormat(string sourceFolder)
+	{
+		ImageType[] present = [.. Enum.GetValues<ImageType>().Where(format => HasFilesOfFormat(sourceFolder, format))];
+
+		return present.Length switch
+		{
+			1 => present[0],
+			0 => throw new CommandException($"No convertible image files were found in '{sourceFolder}'."),
+			_ => throw new CommandException("The source folder holds more than one image format. Specify '--from'.")
+		};
+	}
+
+	private bool HasFilesOfFormat(string sourceFolder, ImageType format)
+		=> format.GetFileExtensions()
+			.Any(extension => _directoryProvider.GetFiles(sourceFolder, $"*.{extension}", SearchOption.AllDirectories).Length > 0);
 }

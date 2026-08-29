@@ -2,6 +2,8 @@
 	<PropertyGroup>
 		<IsTestProject>True</IsTestProject>
 		<IsPackable>False</IsPackable>
+		<!-- Match the Windows-only native DirectXTex payload pulled in transitively. -->
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Moq" />
@@ -30,6 +32,18 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Resources\JSON\Result.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Resources\TGA\32.tga">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Resources\TGA\32A.tga">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Resources\JPG\32.jpg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Resources\JPG\32A.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Resources\PNG\32.png">

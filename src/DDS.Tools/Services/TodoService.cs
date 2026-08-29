@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Copyright:	Robert Peter Meyer
 // License:		MIT
 //
@@ -7,14 +7,13 @@
 // -----------------------------------------------------------------------------
 using BB84.Extensions;
 
-using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
-using DDS.Tools.Interfaces.Models;
+using DDS.Tools.Interfaces.Imaging;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
 using DDS.Tools.Properties;
-using DDS.Tools.Settings.Base;
+using DDS.Tools.Settings;
 
 using Microsoft.Extensions.Logging;
 
@@ -27,16 +26,16 @@ namespace DDS.Tools.Services;
 /// <param name="directoryProvider">The directory provider instance to use.</param>
 /// <param name="fileProvider">The file provider instance to use.</param>
 /// <param name="pathProvider">The path provider instance to use.</param>
-/// <param name="imageModelFactory">The image model factory instance to use.</param>
+/// <param name="codecRegistry">The image codec registry instance to use.</param>
 internal sealed class TodoService(
 	ILoggerService<TodoService> loggerService,
 	IDirectoryProvider directoryProvider,
 	IFileProvider fileProvider,
 	IPathProvider pathProvider,
-	Func<ImageType, IImageModel> imageModelFactory) : ITodoService
+	IImageCodecRegistry codecRegistry) : ITodoService
 {
-	private readonly TodoPlanningService _todoPlanningService = new(directoryProvider, pathProvider, imageModelFactory);
-	private readonly TodoTransformationService _todoTransformationService = new(directoryProvider, fileProvider, pathProvider, imageModelFactory);
+	private readonly TodoPlanningService _todoPlanningService = new(directoryProvider, fileProvider, pathProvider);
+	private readonly TodoTransformationService _todoTransformationService = new(directoryProvider, fileProvider, pathProvider, codecRegistry);
 	private readonly TodoPersistenceService _todoPersistenceService = new(fileProvider, pathProvider);
 	private readonly ILoggerService<TodoService> _loggerService = loggerService;
 
@@ -45,20 +44,20 @@ internal sealed class TodoService(
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
-	public TodoCollection GetTodos(ConvertSettingsBase settings, ImageType imageType)
-		=> Execute(() => _todoPlanningService.GetTodos(settings, imageType), nameof(GetTodos));
+	public TodoCollection GetTodos(ConvertSettings settings)
+		=> Execute(() => _todoPlanningService.GetTodos(settings), nameof(GetTodos));
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
-	public TodoCollection GetTodos(ConvertSettingsBase settings, ImageType imageType, string jsonFileContent)
-		=> Execute(() => _todoPlanningService.GetTodos(settings, imageType, jsonFileContent), nameof(GetTodos));
+	public TodoCollection GetTodos(ConvertSettings settings, string jsonFileContent)
+		=> Execute(() => _todoPlanningService.GetTodos(settings, jsonFileContent), nameof(GetTodos));
 
 	/// <inheritdoc/>
 	/// <exception cref="ServiceException"></exception>
-	public void GetTodosDone(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, bool jsonExists = false)
+	public void GetTodosDone(TodoCollection todos, ConvertSettings settings, bool jsonExists = false)
 		=> Execute(() =>
 		{
-			TodoProcessingResult result = _todoTransformationService.GetTodosDone(todos, settings, imageType);
+			TodoProcessingResult result = _todoTransformationService.GetTodosDone(todos, settings);
 			_todoPersistenceService.PersistResult(todos, settings, jsonExists, result);
 		}, nameof(GetTodosDone));
 

@@ -5,14 +5,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
+using BB84.Extensions;
 using BB84.Extensions.Serialization;
 
-using DDS.Tools.Enumerators;
 using DDS.Tools.Extensions;
-using DDS.Tools.Interfaces.Models;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Models;
-using DDS.Tools.Settings.Base;
+using DDS.Tools.Settings;
 
 namespace DDS.Tools.Services;
 
@@ -20,22 +19,25 @@ namespace DDS.Tools.Services;
 /// Handles todo planning by discovering files and mapping result json entries.
 /// </summary>
 /// <param name="directoryProvider">The directory provider instance to use.</param>
+/// <param name="fileProvider">The file provider instance to use.</param>
 /// <param name="pathProvider">The path provider instance to use.</param>
-/// <param name="imageModelFactory">The image model factory instance to use.</param>
 internal sealed class TodoPlanningService(
 	IDirectoryProvider directoryProvider,
-	IPathProvider pathProvider,
-	Func<ImageType, IImageModel> imageModelFactory)
+	IFileProvider fileProvider,
+	IPathProvider pathProvider)
 {
 	private readonly IDirectoryProvider _directoryProvider = directoryProvider;
+	private readonly IFileProvider _fileProvider = fileProvider;
 	private readonly IPathProvider _pathProvider = pathProvider;
-	private readonly Func<ImageType, IImageModel> _imageModelFactory = imageModelFactory;
 
-	internal TodoCollection GetTodos(ConvertSettingsBase settings, ImageType imageType)
+	internal TodoCollection GetTodos(ConvertSettings settings)
 	{
 		TodoCollection todos = [];
 
-		string[] files = _directoryProvider.GetFiles(settings.SourceFolder, $"*.{imageType}", SearchOption.AllDirectories);
+		string[] files = settings.SourceFormat.GetFileExtensions()
+			.SelectMany(extension => _directoryProvider.GetFiles(settings.SourceFolder, $"*.{extension}", SearchOption.AllDirectories))
+			.Distinct()
+			.ToArray();
 
 		if (files.Length.Equals(0))
 			return todos;
@@ -45,48 +47,45 @@ internal sealed class TodoPlanningService(
 		string sourceFolder = _pathProvider.TrimEndingDirectorySeparator(_pathProvider.GetFullPath(settings.SourceFolder));
 
 		foreach (string file in files)
-			MapTodoFromFile(todos, settings, sourceFolder, imageType, file);
+			MapTodoFromFile(todos, settings, sourceFolder, file);
 
 		return todos;
 	}
 
-	internal TodoCollection GetTodos(ConvertSettingsBase settings, ImageType imageType, string jsonFileContent)
+	internal TodoCollection GetTodos(ConvertSettings settings, string jsonFileContent)
 	{
 		TodoCollection todos = [];
 
 		TodoCollection todosFromJson = jsonFileContent.FromJson<TodoCollection>();
 
 		foreach (TodoModel todoFromJson in todosFromJson)
-			MapTodoFromJson(todos, settings, imageType, todoFromJson);
+			MapTodoFromJson(todos, settings, todoFromJson);
 
 		return todos;
 	}
 
-	private void MapTodoFromFile(TodoCollection todos, ConvertSettingsBase settings, string sourceFolder, ImageType imageType, string file)
+	private void MapTodoFromFile(TodoCollection todos, ConvertSettings settings, string sourceFolder, string file)
 	{
 		FileInfo fileInfo = new(file);
-
-		using IImageModel image = _imageModelFactory(imageType);
-		image.Load(file);
 
 		TodoModel todo = new(
 			fileName: fileInfo.Name,
 			relativePath: $"{fileInfo.DirectoryName?.Replace(sourceFolder, string.Empty, StringComparison.OrdinalIgnoreCase)}",
 			fullPathName: fileInfo.FullName,
 			targetFolder: settings.TargetFolder,
-			fileHash: image.Hash
+			fileHash: _fileProvider.ReadAllBytes(file).GetMD5String()
 			);
 
 		todos.Enqueue(todo);
 	}
 
-	private void MapTodoFromJson(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType, TodoModel todoFromJson)
+	private void MapTodoFromJson(TodoCollection todos, ConvertSettings settings, TodoModel todoFromJson)
 	{
 		string newFullPathName = _pathProvider
-			.Combine(settings.TargetFolder, todoFromJson.RelativePath, todoFromJson.FileName.Replace($"{imageType.GetTargetType()}", $"{imageType}"));
+			.Combine(settings.TargetFolder, todoFromJson.RelativePath, todoFromJson.FileName.Replace($"{settings.To}", $"{settings.SourceFormat}"));
 
 		TodoModel todo = new(
-			fileName: $"{todoFromJson.FileHash}.{imageType.GetTargetType()}",
+			fileName: $"{todoFromJson.FileHash}.{settings.To}",
 			relativePath: todoFromJson.RelativePath,
 			fullPathName: newFullPathName,
 			targetFolder: settings.TargetFolder,
