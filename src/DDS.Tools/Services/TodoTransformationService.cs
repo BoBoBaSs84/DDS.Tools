@@ -7,10 +7,11 @@
 // -----------------------------------------------------------------------------
 using DDS.Tools.Enumerators;
 using DDS.Tools.Extensions;
-using DDS.Tools.Interfaces.Models;
+using DDS.Tools.Imaging;
+using DDS.Tools.Interfaces.Imaging;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Models;
-using DDS.Tools.Settings.Base;
+using DDS.Tools.Settings;
 
 using Spectre.Console;
 
@@ -22,19 +23,19 @@ namespace DDS.Tools.Services;
 /// <param name="directoryProvider">The directory provider instance to use.</param>
 /// <param name="fileProvider">The file provider instance to use.</param>
 /// <param name="pathProvider">The path provider instance to use.</param>
-/// <param name="imageModelFactory">The image model factory instance to use.</param>
+/// <param name="codecRegistry">The image codec registry instance to use.</param>
 internal sealed class TodoTransformationService(
 	IDirectoryProvider directoryProvider,
 	IFileProvider fileProvider,
 	IPathProvider pathProvider,
-	Func<ImageType, IImageModel> imageModelFactory)
+	IImageCodecRegistry codecRegistry)
 {
 	private readonly IDirectoryProvider _directoryProvider = directoryProvider;
 	private readonly IFileProvider _fileProvider = fileProvider;
 	private readonly IPathProvider _pathProvider = pathProvider;
-	private readonly Func<ImageType, IImageModel> _imageModelFactory = imageModelFactory;
+	private readonly IImageCodecRegistry _codecRegistry = codecRegistry;
 
-	internal TodoProcessingResult GetTodosDone(TodoCollection todos, ConvertSettingsBase settings, ImageType imageType)
+	internal TodoProcessingResult GetTodosDone(TodoCollection todos, ConvertSettings settings)
 	{
 		// The hash set only indexes what has been seen. Counting it would report distinct
 		// content rather than transferred files, which differ whenever a mode does not deduplicate.
@@ -51,7 +52,7 @@ internal sealed class TodoTransformationService(
 				continue;
 			}
 
-			TransferImage(settings, todo, imageType);
+			TransferImage(settings, todo);
 			processedHashes.Add(todo.FileHash);
 			todosDoneCount++;
 		}
@@ -59,15 +60,16 @@ internal sealed class TodoTransformationService(
 		return new(todosDoneCount, todosDuplicateCount);
 	}
 
-	private static bool IsDuplicate(TodoModel todo, ConvertSettingsBase settings, ISet<string> processedHashes)
+	private static bool IsDuplicate(TodoModel todo, ConvertSettings settings, ISet<string> processedHashes)
 		=> DeduplicatesByHash(settings.ConvertMode) && processedHashes.Contains(todo.FileHash);
 
-	private void TransferImage(ConvertSettingsBase settings, TodoModel todo, ImageType imageType)
+	private void TransferImage(ConvertSettings settings, TodoModel todo)
 	{
-		using IImageModel image = _imageModelFactory(imageType);
-		image.Load(todo.FullPathName);
+		ImageCanvas canvas = _codecRegistry
+			.GetDecoder(settings.SourceFormat)
+			.Decode(_fileProvider.ReadAllBytes(todo.FullPathName));
 
-		string targetFolder = PrepareTargetFolder(settings, image, todo);
+		string targetFolder = PrepareTargetFolder(settings, canvas, todo);
 
 		if (!_directoryProvider.CreateDirectory(targetFolder).Exists)
 			return;
@@ -81,24 +83,25 @@ internal sealed class TodoTransformationService(
 			return;
 		}
 
-		image.Save(_pathProvider.Combine(targetFolder, $"{newFileName}.{imageType.GetTargetType()}"), settings);
+		byte[] encoded = _codecRegistry.GetEncoder(settings.To).Encode(canvas, settings.Compression);
+		_fileProvider.WriteAllBytes(_pathProvider.Combine(targetFolder, $"{newFileName}.{settings.To}"), encoded);
 	}
 
 	private static bool DeduplicatesByHash(ConvertModeType convertMode)
 		=> convertMode is ConvertModeType.Automatic or ConvertModeType.Grouping;
 
-	private string PrepareTargetFolder(ConvertSettingsBase settings, IImageModel image, TodoModel todo)
+	private string PrepareTargetFolder(ConvertSettings settings, ImageCanvas canvas, TodoModel todo)
 	{
 		string newTargetFolder = todo.TargetFolder;
 
 		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
 		{
-			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}");
+			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{canvas.Width}");
 			return newTargetFolder;
 		}
 		else if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
 		{
-			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}x{image.Height}");
+			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{canvas.Width}x{canvas.Height}");
 			return newTargetFolder;
 		}
 
@@ -106,12 +109,12 @@ internal sealed class TodoTransformationService(
 			return $"{newTargetFolder}{todo.RelativePath}";
 
 		if (settings.SeparateBySize)
-			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{image.Width}");
+			newTargetFolder = _pathProvider.Combine(newTargetFolder, $"{canvas.Width}");
 
 		return newTargetFolder;
 	}
 
-	private static string GetTargetFileName(ConvertSettingsBase settings, TodoModel todo)
+	private static string GetTargetFileName(ConvertSettings settings, TodoModel todo)
 	{
 		if (settings.ConvertMode == ConvertModeType.Manual && settings.RetainStructure)
 		{

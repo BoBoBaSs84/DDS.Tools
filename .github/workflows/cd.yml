@@ -64,6 +64,7 @@ jobs:
           dotnet publish src/DDS.Tools/DDS.Tools.csproj
           --configuration ${{ env.CONFIGURATION }}
           --runtime ${{ env.RUNTIME }}
+          --self-contained false
           --output ./publish
           -p:VersionPrefix=${{ steps.version.outputs.VERSION }}
           -p:VersionSuffix=

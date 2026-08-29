@@ -16,85 +16,69 @@ namespace DDS.Tools.Tests.Commands;
 public sealed class CommandArgumentParsingTests
 {
 	[TestMethod]
-	public void DdsSettingsParserBindsSourceAndTargetByPosition()
+	public void ConvertSettingsBindSourceTargetAndTargetFormat()
 	{
-		DdsParserProbeCommand.LastSettings = null;
-		CommandApp app = new();
+		ProbeCommand.LastSettings = null;
+		CommandApp app = CreateApp();
 
-		app.Configure(config => config.AddCommand<DdsParserProbeCommand>("dds-probe"));
-
-		int result = app.Run(["dds-probe", "source-folder", "target-folder"]);
+		int result = app.Run(["convert-probe", "source-folder", "target-folder", "--to", "PNG"]);
 
 		Assert.AreEqual(0, result);
-		Assert.IsNotNull(DdsParserProbeCommand.LastSettings);
-		Assert.AreEqual("source-folder", DdsParserProbeCommand.LastSettings.SourceFolder);
-		Assert.AreEqual("target-folder", DdsParserProbeCommand.LastSettings.TargetFolder);
-		Assert.AreEqual(ConvertModeType.Automatic, DdsParserProbeCommand.LastSettings.ConvertMode);
+		Assert.IsNotNull(ProbeCommand.LastSettings);
+		Assert.AreEqual("source-folder", ProbeCommand.LastSettings.SourceFolder);
+		Assert.AreEqual("target-folder", ProbeCommand.LastSettings.TargetFolder);
+		Assert.AreEqual(ImageType.PNG, ProbeCommand.LastSettings.To);
+		Assert.IsNull(ProbeCommand.LastSettings.From);
+		Assert.AreEqual(ConvertModeType.Automatic, ProbeCommand.LastSettings.ConvertMode);
 	}
 
 	[TestMethod]
-	public void DdsSettingsParserBindsOptionalConvertMode()
+	public void ConvertSettingsBindOptionalConvertModeAndSourceFormat()
 	{
-		DdsParserProbeCommand.LastSettings = null;
-		CommandApp app = new();
+		ProbeCommand.LastSettings = null;
+		CommandApp app = CreateApp();
 
-		app.Configure(config => config.AddCommand<DdsParserProbeCommand>("dds-probe"));
-
-		int result = app.Run(["dds-probe", "source-folder", "target-folder", nameof(ConvertModeType.Manual)]);
+		int result = app.Run(["convert-probe", "src", "tgt", nameof(ConvertModeType.Manual), "--from", "PNG", "--to", "DDS"]);
 
 		Assert.AreEqual(0, result);
-		Assert.IsNotNull(DdsParserProbeCommand.LastSettings);
-		Assert.AreEqual(ConvertModeType.Manual, DdsParserProbeCommand.LastSettings.ConvertMode);
+		Assert.IsNotNull(ProbeCommand.LastSettings);
+		Assert.AreEqual(ConvertModeType.Manual, ProbeCommand.LastSettings.ConvertMode);
+		Assert.AreEqual(ImageType.PNG, ProbeCommand.LastSettings.From);
+		Assert.AreEqual(ImageType.DDS, ProbeCommand.LastSettings.To);
 	}
 
 	[TestMethod]
-	public void PngSettingsParserBindsSourceAndTargetByPosition()
+	public void ConvertSettingsRejectMissingTargetFormat()
 	{
-		PngParserProbeCommand.LastSettings = null;
-		CommandApp app = new();
+		CommandApp app = CreateApp();
 
-		app.Configure(config => config.AddCommand<PngParserProbeCommand>("png-probe"));
+		int result = app.Run(["convert-probe", "src", "tgt"]);
 
-		int result = app.Run(["png-probe", "png-source", "dds-target"]);
-
-		Assert.AreEqual(0, result);
-		Assert.IsNotNull(PngParserProbeCommand.LastSettings);
-		Assert.AreEqual("png-source", PngParserProbeCommand.LastSettings.SourceFolder);
-		Assert.AreEqual("dds-target", PngParserProbeCommand.LastSettings.TargetFolder);
-		Assert.AreEqual(ConvertModeType.Automatic, PngParserProbeCommand.LastSettings.ConvertMode);
+		Assert.AreNotEqual(0, result);
 	}
 
 	[TestMethod]
-	public void PngSettingsParserBindsOptionalConvertMode()
+	public void ConvertSettingsRejectEqualSourceAndTargetFormat()
 	{
-		PngParserProbeCommand.LastSettings = null;
+		CommandApp app = CreateApp();
+
+		int result = app.Run(["convert-probe", "src", "tgt", "--from", "PNG", "--to", "PNG"]);
+
+		Assert.AreNotEqual(0, result);
+	}
+
+	private static CommandApp CreateApp()
+	{
 		CommandApp app = new();
-
-		app.Configure(config => config.AddCommand<PngParserProbeCommand>("png-probe"));
-
-		int result = app.Run(["png-probe", "png-source", "dds-target", nameof(ConvertModeType.Grouping)]);
-
-		Assert.AreEqual(0, result);
-		Assert.IsNotNull(PngParserProbeCommand.LastSettings);
-		Assert.AreEqual(ConvertModeType.Grouping, PngParserProbeCommand.LastSettings.ConvertMode);
+		app.Configure(config => config.AddCommand<ProbeCommand>("convert-probe"));
+		return app;
 	}
 
-	private sealed class DdsParserProbeCommand : Command<DdsConvertSettings>
+	private sealed class ProbeCommand : Command<ConvertSettings>
 	{
-		public static DdsConvertSettings? LastSettings { get; set; }
+		public static ConvertSettings? LastSettings { get; set; }
 
-		protected override int Execute(CommandContext context, DdsConvertSettings settings, CancellationToken cancellationToken)
-		{
-			LastSettings = settings;
-			return 0;
-		}
-	}
-
-	private sealed class PngParserProbeCommand : Command<PngConvertSettings>
-	{
-		public static PngConvertSettings? LastSettings { get; set; }
-
-		protected override int Execute(CommandContext context, PngConvertSettings settings, CancellationToken cancellationToken)
+		protected override int Execute(CommandContext context, ConvertSettings settings, CancellationToken cancellationToken)
 		{
 			LastSettings = settings;
 			return 0;

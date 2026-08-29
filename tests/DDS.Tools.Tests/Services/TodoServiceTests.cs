@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Copyright:	Robert Peter Meyer
 // License:		MIT
 //
@@ -7,13 +7,13 @@
 // -----------------------------------------------------------------------------
 using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
-using DDS.Tools.Interfaces.Models;
+using DDS.Tools.Imaging;
+using DDS.Tools.Interfaces.Imaging;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
 using DDS.Tools.Services;
 using DDS.Tools.Settings;
-using DDS.Tools.Settings.Base;
 
 using Microsoft.Extensions.Logging;
 
@@ -26,52 +26,52 @@ public sealed class TodoServiceTests
 {
 	private readonly Mock<IDirectoryProvider> _directoryProviderMock = new();
 	private readonly Mock<IFileProvider> _fileProviderMock = new();
-	private readonly Mock<IImageModel> _imageModelMock = new();
 	private readonly Mock<ILoggerService<TodoService>> _loggerServiceMock = new();
 	private readonly Mock<IPathProvider> _pathProviderMock = new();
+	private readonly Mock<IImageCodecRegistry> _codecRegistryMock = new();
+	private readonly Mock<IImageDecoder> _decoderMock = new();
+	private readonly Mock<IImageEncoder> _encoderMock = new();
 
 	[TestMethod]
 	public void GetTodosNoFilesFoundReturnsEmptyCollection()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
 
 		_directoryProviderMock
-			.Setup(x => x.GetFiles(settings.SourceFolder, "*.DDS", SearchOption.AllDirectories))
+			.Setup(x => x.GetFiles(settings.SourceFolder, "*.dds", SearchOption.AllDirectories))
 			.Returns([]);
 
 		TodoService sut = CreateSut();
 
-		TodoCollection result = sut.GetTodos(settings, ImageType.DDS);
+		TodoCollection result = sut.GetTodos(settings);
 
 		Assert.IsEmpty(result);
-		_imageModelMock.Verify(x => x.Load(It.IsAny<string>()), Times.Never);
+		_fileProviderMock.Verify(x => x.ReadAllBytes(It.IsAny<string>()), Times.Never);
 	}
 
 	[TestMethod]
 	public void GetTodosFilesFoundReturnsTodos()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
 
 		string[] files =
 		[
-			Path.Combine(settings.SourceFolder, "Blue", "64.DDS"),
-			Path.Combine(settings.SourceFolder, "Red", "64A.DDS")
+			Path.Combine(settings.SourceFolder, "Blue", "64.dds"),
+			Path.Combine(settings.SourceFolder, "Red", "64A.dds")
 		];
 
 		_directoryProviderMock
-			.Setup(x => x.GetFiles(settings.SourceFolder, "*.DDS", SearchOption.AllDirectories))
+			.Setup(x => x.GetFiles(settings.SourceFolder, "*.dds", SearchOption.AllDirectories))
 			.Returns(files);
-
-		_imageModelMock.SetupGet(x => x.Hash).Returns("HASH_01");
 
 		TodoService sut = CreateSut();
 
-		TodoCollection result = sut.GetTodos(settings, ImageType.DDS);
+		TodoCollection result = sut.GetTodos(settings);
 
 		Assert.HasCount(2, result);
-		_imageModelMock.Verify(x => x.Load(It.IsAny<string>()), Times.Exactly(2));
+		_fileProviderMock.Verify(x => x.ReadAllBytes(It.IsAny<string>()), Times.Exactly(2));
 	}
 
 	[TestMethod]
@@ -82,31 +82,30 @@ public sealed class TodoServiceTests
 	{
 		ConfigureCommonMocks();
 
-		// Rooted below the current directory so the relative variant really is relative.
-		// GetRelativePath falls back to an absolute path when the two sit on different drives.
 		string rootPath = Path.Combine(Environment.CurrentDirectory, $"dds-tools-tests-{Guid.NewGuid():N}");
 		string sourceFolder = Path.Combine(rootPath, "source");
 
-		PngConvertSettings settings = new()
+		ConvertSettings settings = new()
 		{
 			SourceFolder = variant switch
 			{
-				// A relative folder never matches the absolute directory of a discovered file.
 				"relative" => Path.GetRelativePath(Environment.CurrentDirectory, sourceFolder),
 				"trailing" => $"{sourceFolder}{Path.DirectorySeparatorChar}",
 				_ => sourceFolder.ToUpperInvariant()
 			},
 			TargetFolder = Path.Combine(rootPath, "target"),
+			From = ImageType.DDS,
+			To = ImageType.PNG,
 			ConvertMode = ConvertModeType.Manual
 		};
 
 		_directoryProviderMock
-			.Setup(x => x.GetFiles(settings.SourceFolder, "*.DDS", SearchOption.AllDirectories))
-			.Returns([Path.Combine(sourceFolder, "Blue", "64.DDS")]);
+			.Setup(x => x.GetFiles(settings.SourceFolder, "*.dds", SearchOption.AllDirectories))
+			.Returns([Path.Combine(sourceFolder, "Blue", "64.dds")]);
 
 		TodoService sut = CreateSut();
 
-		TodoCollection result = sut.GetTodos(settings, ImageType.DDS);
+		TodoCollection result = sut.GetTodos(settings);
 
 		Assert.AreEqual($"{Path.DirectorySeparatorChar}Blue", result.Single().RelativePath);
 	}
@@ -115,7 +114,7 @@ public sealed class TodoServiceTests
 	public void GetTodosFromJsonReturnsMappedTodos()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
 
 		string jsonContent = """
 			[
@@ -129,7 +128,7 @@ public sealed class TodoServiceTests
 
 		TodoService sut = CreateSut();
 
-		TodoCollection result = sut.GetTodos(settings, ImageType.DDS, jsonContent);
+		TodoCollection result = sut.GetTodos(settings, jsonContent);
 
 		Assert.HasCount(1, result);
 
@@ -143,10 +142,10 @@ public sealed class TodoServiceTests
 	public void GetTodosFromJsonWhenJsonIsInvalidThrowsServiceExceptionAndLogs()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
 		TodoService sut = CreateSut();
 
-		Assert.Throws<ServiceException>(() => sut.GetTodos(settings, ImageType.DDS, "{"));
+		Assert.Throws<ServiceException>(() => sut.GetTodos(settings, "{"));
 
 		_loggerServiceMock.Verify(
 			x => x.Log(It.IsAny<Action<ILogger, Exception?>>(), It.IsAny<Exception?>()),
@@ -154,13 +153,11 @@ public sealed class TodoServiceTests
 	}
 
 	[TestMethod]
-	public void GetTodosDoneAutomaticWithDuplicatesSavesOnceAndWritesJson()
+	public void GetTodosDoneAutomaticWithDuplicatesEncodesOnceAndWritesJson()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
-
-		_imageModelMock.SetupGet(x => x.Width).Returns(64);
-		_imageModelMock.SetupGet(x => x.Height).Returns(32);
+		SetupCanvas(64, 32);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
 
 		TodoCollection todos = new();
 		todos.Enqueue(new TodoModel("a.DDS", string.Empty, Path.Combine(settings.SourceFolder, "a.DDS"), settings.TargetFolder, "DUP_HASH"));
@@ -168,12 +165,13 @@ public sealed class TodoServiceTests
 
 		TodoService sut = CreateSut();
 
-		sut.GetTodosDone(todos, settings, ImageType.DDS);
+		sut.GetTodosDone(todos, settings);
 
 		string expectedSavePath = Path.Combine(settings.TargetFolder, "64", "DUP_HASH.PNG");
 		string expectedJsonPath = Path.Combine(settings.TargetFolder, "Result.json");
 
-		_imageModelMock.Verify(x => x.Save(expectedSavePath, settings), Times.Once);
+		_encoderMock.Verify(x => x.Encode(It.IsAny<ImageCanvas>(), CompressionLevel.Balanced), Times.Once);
+		_fileProviderMock.Verify(x => x.WriteAllBytes(expectedSavePath, It.IsAny<byte[]>()), Times.Once);
 		_fileProviderMock.Verify(x => x.WriteAllText(expectedJsonPath, It.IsAny<string>()), Times.Once);
 	}
 
@@ -181,10 +179,8 @@ public sealed class TodoServiceTests
 	public void GetTodosDoneGroupingWithDuplicatesCopiesOnce()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Grouping);
-
-		_imageModelMock.SetupGet(x => x.Width).Returns(128);
-		_imageModelMock.SetupGet(x => x.Height).Returns(64);
+		SetupCanvas(128, 64);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Grouping);
 
 		TodoCollection todos = new();
 		todos.Enqueue(new TodoModel("x.DDS", string.Empty, Path.Combine(settings.SourceFolder, "x.DDS"), settings.TargetFolder, "DUP_HASH"));
@@ -192,15 +188,12 @@ public sealed class TodoServiceTests
 
 		TodoService sut = CreateSut();
 
-		sut.GetTodosDone(todos, settings, ImageType.DDS, jsonExists: true);
+		sut.GetTodosDone(todos, settings, jsonExists: true);
 
 		string expectedCopyPath = Path.Combine(settings.TargetFolder, "128x64", "x.DDS");
 
-		_fileProviderMock.Verify(
-			x => x.Copy(Path.Combine(settings.SourceFolder, "x.DDS"), expectedCopyPath),
-			Times.Once);
-
-		_imageModelMock.Verify(x => x.Save(It.IsAny<string>(), It.IsAny<ConvertSettingsBase>()), Times.Never);
+		_fileProviderMock.Verify(x => x.Copy(Path.Combine(settings.SourceFolder, "x.DDS"), expectedCopyPath), Times.Once);
+		_encoderMock.Verify(x => x.Encode(It.IsAny<ImageCanvas>(), It.IsAny<CompressionLevel>()), Times.Never);
 		_fileProviderMock.Verify(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
 	}
 
@@ -208,7 +201,8 @@ public sealed class TodoServiceTests
 	public void GetTodosDoneManualWithRetainStructureKeepsFolderAndFileName()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Manual);
+		SetupCanvas(64, 64);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Manual);
 		settings.RetainStructure = true;
 
 		string relativePath = $"{Path.DirectorySeparatorChar}Blue";
@@ -217,51 +211,50 @@ public sealed class TodoServiceTests
 
 		TodoService sut = CreateSut();
 
-		sut.GetTodosDone(todos, settings, ImageType.DDS);
+		sut.GetTodosDone(todos, settings);
 
-		// RetainStructure concatenates the relative path and strips the source extension.
 		string expectedSavePath = Path.Combine($"{settings.TargetFolder}{relativePath}", "64.PNG");
 
-		_imageModelMock.Verify(x => x.Save(expectedSavePath, settings), Times.Once);
+		_fileProviderMock.Verify(x => x.WriteAllBytes(expectedSavePath, It.IsAny<byte[]>()), Times.Once);
 	}
 
 	[TestMethod]
 	public void GetTodosDoneManualWithSeparateBySizeUsesWidthFolderAndHashName()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Manual);
+		SetupCanvas(64, 64);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Manual);
 		settings.SeparateBySize = true;
-
-		_imageModelMock.SetupGet(x => x.Width).Returns(64);
 
 		TodoCollection todos = new();
 		todos.Enqueue(new TodoModel("64.DDS", string.Empty, Path.Combine(settings.SourceFolder, "64.DDS"), settings.TargetFolder, "HASH_A"));
 
 		TodoService sut = CreateSut();
 
-		sut.GetTodosDone(todos, settings, ImageType.DDS);
+		sut.GetTodosDone(todos, settings);
 
 		string expectedSavePath = Path.Combine(settings.TargetFolder, "64", "HASH_A.PNG");
 
-		_imageModelMock.Verify(x => x.Save(expectedSavePath, settings), Times.Once);
+		_fileProviderMock.Verify(x => x.WriteAllBytes(expectedSavePath, It.IsAny<byte[]>()), Times.Once);
 	}
 
 	[TestMethod]
 	public void GetTodosDoneManualWithoutOptionsUsesTargetFolderAndHashName()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Manual);
+		SetupCanvas(64, 64);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Manual);
 
 		TodoCollection todos = new();
 		todos.Enqueue(new TodoModel("64.DDS", string.Empty, Path.Combine(settings.SourceFolder, "64.DDS"), settings.TargetFolder, "HASH_A"));
 
 		TodoService sut = CreateSut();
 
-		sut.GetTodosDone(todos, settings, ImageType.DDS);
+		sut.GetTodosDone(todos, settings);
 
 		string expectedSavePath = Path.Combine(settings.TargetFolder, "HASH_A.PNG");
 
-		_imageModelMock.Verify(x => x.Save(expectedSavePath, settings), Times.Once);
+		_fileProviderMock.Verify(x => x.WriteAllBytes(expectedSavePath, It.IsAny<byte[]>()), Times.Once);
 
 		// The result json is only persisted in automatic mode.
 		_fileProviderMock.Verify(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
@@ -271,7 +264,8 @@ public sealed class TodoServiceTests
 	public void GetTodosDoneManualWithDuplicatesSavesEveryTodo()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Manual);
+		SetupCanvas(64, 64);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Manual);
 
 		TodoCollection todos = new();
 		todos.Enqueue(new TodoModel("a.DDS", string.Empty, Path.Combine(settings.SourceFolder, "a.DDS"), settings.TargetFolder, "DUP_HASH"));
@@ -279,30 +273,28 @@ public sealed class TodoServiceTests
 
 		TodoService sut = CreateSut();
 
-		sut.GetTodosDone(todos, settings, ImageType.DDS);
+		sut.GetTodosDone(todos, settings);
 
 		// Manual mode does not deduplicate by hash, so both todos are saved.
 		string expectedSavePath = Path.Combine(settings.TargetFolder, "DUP_HASH.PNG");
 
-		_imageModelMock.Verify(x => x.Save(expectedSavePath, settings), Times.Exactly(2));
+		_fileProviderMock.Verify(x => x.WriteAllBytes(expectedSavePath, It.IsAny<byte[]>()), Times.Exactly(2));
 	}
 
 	[TestMethod]
-	public void GetTodosDoneWhenImageLoadThrowsThrowsServiceExceptionAndLogs()
+	public void GetTodosDoneWhenDecodeThrowsThrowsServiceExceptionAndLogs()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
 
 		TodoCollection todos = new();
 		todos.Enqueue(new TodoModel("a.DDS", string.Empty, Path.Combine(settings.SourceFolder, "a.DDS"), settings.TargetFolder, "HASH_A"));
 
-		_imageModelMock
-			.Setup(x => x.Load(It.IsAny<string>()))
-			.Throws(new InvalidOperationException("boom"));
+		_decoderMock.Setup(x => x.Decode(It.IsAny<byte[]>())).Throws(new InvalidOperationException("boom"));
 
 		TodoService sut = CreateSut();
 
-		Assert.Throws<ServiceException>(() => sut.GetTodosDone(todos, settings, ImageType.DDS));
+		Assert.Throws<ServiceException>(() => sut.GetTodosDone(todos, settings));
 
 		_loggerServiceMock.Verify(
 			x => x.Log(It.IsAny<Action<ILogger, Exception?>>(), It.IsAny<Exception?>()),
@@ -313,15 +305,15 @@ public sealed class TodoServiceTests
 	public void GetTodosWhenProviderThrowsThrowsServiceExceptionAndLogs()
 	{
 		ConfigureCommonMocks();
-		PngConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
+		ConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
 
 		_directoryProviderMock
-			.Setup(x => x.GetFiles(settings.SourceFolder, "*.DDS", SearchOption.AllDirectories))
+			.Setup(x => x.GetFiles(settings.SourceFolder, "*.dds", SearchOption.AllDirectories))
 			.Throws(new InvalidOperationException("boom"));
 
 		TodoService sut = CreateSut();
 
-		Assert.Throws<ServiceException>(() => sut.GetTodos(settings, ImageType.DDS));
+		Assert.Throws<ServiceException>(() => sut.GetTodos(settings));
 
 		_loggerServiceMock.Verify(
 			x => x.Log(It.IsAny<Action<ILogger, Exception?>>(), It.IsAny<Exception?>()),
@@ -334,7 +326,10 @@ public sealed class TodoServiceTests
 			_directoryProviderMock.Object,
 			_fileProviderMock.Object,
 			_pathProviderMock.Object,
-			_ => _imageModelMock.Object);
+			_codecRegistryMock.Object);
+
+	private void SetupCanvas(int width, int height)
+		=> _decoderMock.Setup(x => x.Decode(It.IsAny<byte[]>())).Returns(new ImageCanvas(width, height, new byte[width * height * 4]));
 
 	private void ConfigureCommonMocks()
 	{
@@ -357,16 +352,33 @@ public sealed class TodoServiceTests
 		_pathProviderMock
 			.Setup(x => x.TrimEndingDirectorySeparator(It.IsAny<string>()))
 			.Returns((string path) => Path.TrimEndingDirectorySeparator(path));
+
+		_fileProviderMock
+			.Setup(x => x.ReadAllBytes(It.IsAny<string>()))
+			.Returns([0, 0, 0, 0]);
+
+		_decoderMock
+			.Setup(x => x.Decode(It.IsAny<byte[]>()))
+			.Returns(new ImageCanvas(1, 1, [0, 0, 0, 0]));
+
+		_encoderMock
+			.Setup(x => x.Encode(It.IsAny<ImageCanvas>(), It.IsAny<CompressionLevel>()))
+			.Returns([1, 2, 3]);
+
+		_codecRegistryMock.Setup(x => x.GetDecoder(It.IsAny<ImageType>())).Returns(_decoderMock.Object);
+		_codecRegistryMock.Setup(x => x.GetEncoder(It.IsAny<ImageType>())).Returns(_encoderMock.Object);
 	}
 
-	private static PngConvertSettings CreateSettings(ConvertModeType convertMode)
+	private static ConvertSettings CreateSettings(ConvertModeType convertMode)
 	{
 		string rootPath = Path.Combine(Path.GetTempPath(), $"dds-tools-tests-{Guid.NewGuid():N}");
 
-		return new PngConvertSettings
+		return new ConvertSettings
 		{
 			SourceFolder = Path.Combine(rootPath, "source"),
 			TargetFolder = Path.Combine(rootPath, "target"),
+			From = ImageType.DDS,
+			To = ImageType.PNG,
 			ConvertMode = convertMode
 		};
 	}

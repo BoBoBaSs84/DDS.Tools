@@ -3,6 +3,17 @@
 		<OutputType>Exe</OutputType>
 		<EmitCompilerGeneratedFiles>True</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+		<!-- DirectXTex ships native Windows-only binaries; the tool is Windows-only. -->
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<!--
+		  Ship a single framework-dependent executable. IncludeAllContentForSelfExtract is
+		  required: HexaGen.Runtime resolves the native DirectXTex.dll from a
+		  runtimes/<rid>/native/ tree next to the app, which only the full-content
+		  self-extract lays out.
+		-->
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>false</SelfContained>
+		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="BB84.Extensions" />
@@ -10,9 +21,8 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="BCnEncoder.Net" />
+		<PackageReference Include="Hexa.NET.DirectXTex" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
-		<PackageReference Include="SkiaSharp" />
 		<PackageReference Include="Spectre.Console" />
 		<PackageReference Include="Spectre.Console.Cli" />
 	</ItemGroup>

@@ -11,7 +11,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
