@@ -43,6 +43,34 @@ public sealed class TodoTransformationServiceTests
 	}
 
 	[TestMethod]
+	public void GetTodosDoneRestoreEncodesEachTodoToItsRecordedFormat()
+	{
+		ConfigureCommonMocks();
+		ConvertSettings settings = CreateSettings(ConvertModeType.Automatic);
+		settings.Restore = true;
+
+		TodoCollection todos = new();
+		todos.Enqueue(new TodoModel("64.tga", "\\Blue", Path.Combine(settings.SourceFolder, "Blue", "64.PNG"), settings.TargetFolder, "H1", ImageType.PNG, "64.tga")
+		{
+			TargetType = ImageType.TGA
+		});
+		todos.Enqueue(new TodoModel("64.jpg", "\\Red", Path.Combine(settings.SourceFolder, "Red", "64.PNG"), settings.TargetFolder, "H2", ImageType.PNG, "64.jpg")
+		{
+			TargetType = ImageType.JPG
+		});
+
+		TodoTransformationService sut = CreateSut();
+
+		TodoProcessingResult result = sut.GetTodosDone(todos, settings);
+
+		Assert.AreEqual(2, result.TodosDoneCount);
+		_codecRegistryMock.Verify(x => x.GetEncoder(ImageType.TGA), Times.Once);
+		_codecRegistryMock.Verify(x => x.GetEncoder(ImageType.JPG), Times.Once);
+		_fileProviderMock.Verify(x => x.WriteAllBytes(Path.Combine($"{settings.TargetFolder}\\Blue", "64.TGA"), It.IsAny<byte[]>()), Times.Once);
+		_fileProviderMock.Verify(x => x.WriteAllBytes(Path.Combine($"{settings.TargetFolder}\\Red", "64.JPG"), It.IsAny<byte[]>()), Times.Once);
+	}
+
+	[TestMethod]
 	[DataRow(ConvertModeType.Automatic)]
 	[DataRow(ConvertModeType.Grouping)]
 	public void GetTodosDoneCountsDuplicatesSeparately(ConvertModeType convertMode)
@@ -76,8 +104,8 @@ public sealed class TodoTransformationServiceTests
 	private static TodoCollection CreateDuplicateTodos(ConvertSettings settings)
 	{
 		TodoCollection todos = new();
-		todos.Enqueue(new TodoModel("a.DDS", string.Empty, Path.Combine(settings.SourceFolder, "a.DDS"), settings.TargetFolder, "DUP_HASH"));
-		todos.Enqueue(new TodoModel("b.DDS", string.Empty, Path.Combine(settings.SourceFolder, "b.DDS"), settings.TargetFolder, "DUP_HASH"));
+		todos.Enqueue(new TodoModel("a.DDS", string.Empty, Path.Combine(settings.SourceFolder, "a.DDS"), settings.TargetFolder, "DUP_HASH", ImageType.DDS, "a.DDS"));
+		todos.Enqueue(new TodoModel("b.DDS", string.Empty, Path.Combine(settings.SourceFolder, "b.DDS"), settings.TargetFolder, "DUP_HASH", ImageType.DDS, "b.DDS"));
 
 		return todos;
 	}

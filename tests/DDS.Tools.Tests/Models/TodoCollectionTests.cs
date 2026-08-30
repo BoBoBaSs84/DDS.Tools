@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
+using DDS.Tools.Enumerators;
 using DDS.Tools.Models;
 
 namespace DDS.Tools.Tests.Models;
@@ -16,8 +17,8 @@ public sealed class TodoCollectionTests
 	public void TodoCollectionQueueBehaviorTest()
 	{
 		TodoCollection todos = [];
-		TodoModel first = new("first.dds", "A", @"X:\A\first.dds", @"X:\Target", "HASH-1");
-		TodoModel second = new("second.dds", "B", @"X:\B\second.dds", @"X:\Target", "HASH-2");
+		TodoModel first = new("first.dds", "A", @"X:\A\first.dds", @"X:\Target", "HASH-1", ImageType.DDS, "first.dds");
+		TodoModel second = new("second.dds", "B", @"X:\B\second.dds", @"X:\Target", "HASH-2", ImageType.DDS, "second.dds");
 
 		todos.Enqueue(first);
 		todos.Enqueue(second);

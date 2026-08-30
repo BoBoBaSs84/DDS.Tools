@@ -29,7 +29,7 @@ internal sealed class TodoPersistenceService(IFileProvider fileProvider, IPathPr
 
 	internal void PersistResult(TodoCollection todos, ConvertSettings settings, bool jsonExists, TodoProcessingResult result)
 	{
-		if (!jsonExists && settings.ConvertMode.Equals(ConvertModeType.Automatic))
+		if (!jsonExists && !settings.Restore && WritesResultJson(settings))
 		{
 			string jsonContent = todos.ToJson();
 			string jsonFilePath = _pathProvider.Combine(settings.TargetFolder, Constants.ResultFileName);
@@ -39,4 +39,10 @@ internal sealed class TodoPersistenceService(IFileProvider fileProvider, IPathPr
 		AnsiConsole.MarkupLine($"[green]Todos done:\t{result.TodosDoneCount}[/]");
 		AnsiConsole.MarkupLine($"[yellow]Duplicates:\t{result.DuplicatesCount}[/]");
 	}
+
+	// The result json is the cross-run dedup and restore ledger. It is written by the
+	// automatic mode and by the name-preserving manual mode ('--retain').
+	private static bool WritesResultJson(ConvertSettings settings)
+		=> settings.ConvertMode.Equals(ConvertModeType.Automatic)
+			|| (settings.ConvertMode.Equals(ConvertModeType.Manual) && settings.RetainStructure);
 }

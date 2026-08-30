@@ -19,6 +19,8 @@ I needed some tools that were able to do some slight lifting so I can do some mo
 
 - Convert whole folders of textures between **DDS**, **PNG**, **TGA** and **JPEG** on a large scale
 - Source format is auto-detected from the folder, or set explicitly with `--from`
+- Folders may hold a **mix of formats** &mdash; every recognized file is converted in one pass
+- **Round-trip** support: `--restore` converts edited files back to each file's original format
 - Duplicate detection via a persisted result JSON file
 - Optional **retain structure** mode to preserve original folder and file names
 - Optional **separate by size** mode to sort textures into sub-folders by resolution
@@ -26,8 +28,7 @@ I needed some tools that were able to do some slight lifting so I can do some mo
 - Three convert modes: `Automatic`, `Manual`, and `Grouping`
 - Interactive CLI with progress spinner powered by [Spectre.Console](https://spectreconsole.net/)
 
-Image encoding and decoding is handled by [DirectXTex](https://github.com/microsoft/DirectXTex),
-so DDS.Tools is a **Windows-only** tool.
+Image encoding and decoding is handled by [DirectXTex](https://github.com/microsoft/DirectXTex), so DDS.Tools is a **Windows-only** tool.
 
 ## Usage
 
@@ -43,21 +44,22 @@ DDS.Tools convert <SourceFolder> <TargetFolder> [ConvertMode] --to <format> [opt
 
 ### Options
 
-| Option                | Description                                                          |
-| --------------------- | ------------------------------------------------------------------- |
-| `-f`, `--from`        | Source image format (`DDS`, `PNG`, `TGA`, `JPG`). Inferred from the folder if omitted |
-| `-t`, `--to`          | Target image format (`DDS`, `PNG`, `TGA`, `JPG`). Required          |
-| `-r`, `--retain`      | Retain original folder and file names                              |
-| `-b`, `--bysize`      | Separate converted textures into sub-folders by size               |
-| `-c`, `--compression` | Compression effort: `None`, `Fast`, `Balanced`, `Maximum`          |
+| Option                | Description                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `-f`, `--from`        | Source image format (`DDS`, `PNG`, `TGA`, `JPG`). Omit to convert every recognized format in the folder |
+| `-t`, `--to`          | Target image format (`DDS`, `PNG`, `TGA`, `JPG`). Required unless `--restore`                           |
+| `-r`, `--retain`      | Retain original folder and file names                                                                   |
+| `-b`, `--bysize`      | Separate converted textures into sub-folders by size                                                    |
+| `-c`, `--compression` | Compression effort: `None`, `Fast`, `Balanced`, `Maximum`                                               |
+| `-x`, `--restore`     | Restore files to the original format recorded in the source folder's `Result.json`                      |
 
 ### Convert Modes
 
-| Mode        | Description                         |
-| ----------- | ----------------------------------- |
-| `Automatic` | Default mode, options are ignored   |
-| `Manual`    | Manual mode                         |
-| `Grouping`  | Groups output by a defined criteria |
+| Mode        | Description                                                               |
+| ----------- | ------------------------------------------------------------------------- |
+| `Automatic` | Default mode, options are ignored. Writes `Result.json`                   |
+| `Manual`    | Honors `--retain` / `--bysize`. With `--retain` also writes `Result.json` |
+| `Grouping`  | Groups output by a defined criteria                                       |
 
 ### Examples
 
@@ -89,6 +91,21 @@ DDS.Tools convert "D:\PNG-Textures" "D:\DDS-Textures" --from PNG --to DDS --comp
 
 ```pwsh
 DDS.Tools convert "D:\TGA-Textures" "D:\DDS-Textures" --to DDS
+```
+
+#### Round-trip a folder that mixes TGA and JPG
+
+Convert every file to PNG for editing, keeping names and folders, then restore each
+file to its original format:
+
+```pwsh
+# forward: mixed formats -> PNG, Result.json records each file's original format
+DDS.Tools convert "D:\Game-Textures" "D:\Edit" Manual --to PNG --retain
+
+# ...edit the PNG files in place...
+
+# restore: PNG -> the original TGA / JPG formats and names
+DDS.Tools convert "D:\Edit" "D:\Game-Textures-New" Manual --retain --restore
 ```
 
 ## Contributing

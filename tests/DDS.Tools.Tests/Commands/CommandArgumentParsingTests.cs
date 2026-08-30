@@ -58,6 +58,29 @@ public sealed class CommandArgumentParsingTests
 	}
 
 	[TestMethod]
+	public void ConvertSettingsBindRestoreFlagAndAllowMissingTargetFormat()
+	{
+		ProbeCommand.LastSettings = null;
+		CommandApp app = CreateApp();
+
+		int result = app.Run(["convert-probe", "src", "tgt", "--restore"]);
+
+		Assert.AreEqual(0, result);
+		Assert.IsNotNull(ProbeCommand.LastSettings);
+		Assert.IsTrue(ProbeCommand.LastSettings.Restore);
+	}
+
+	[TestMethod]
+	public void ConvertSettingsRejectRestoreCombinedWithFrom()
+	{
+		CommandApp app = CreateApp();
+
+		int result = app.Run(["convert-probe", "src", "tgt", "--restore", "--from", "PNG"]);
+
+		Assert.AreNotEqual(0, result);
+	}
+
+	[TestMethod]
 	public void ConvertSettingsRejectEqualSourceAndTargetFormat()
 	{
 		CommandApp app = CreateApp();

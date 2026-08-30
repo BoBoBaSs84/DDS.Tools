@@ -6,9 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
 using DDS.Tools.Common;
-using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
-using DDS.Tools.Extensions;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Interfaces.Services;
 using DDS.Tools.Models;
@@ -67,13 +65,15 @@ internal sealed class ConvertCommand(
 		if (!_directoryProvider.Exists(settings.SourceFolder))
 			throw new CommandException($"Directory '{settings.SourceFolder}' not found.");
 
-		settings.From ??= InferSourceFormat(settings.SourceFolder);
-
 		// The result json is read from the source folder, but written to the target folder.
 		string jsonFilePath = _pathProvider.Combine(settings.SourceFolder, Constants.ResultFileName);
 		bool jsonExists = _fileProvider.Exists(jsonFilePath);
 
-		TodoCollection todos = jsonExists
+		if (settings.Restore && !jsonExists)
+			throw new CommandException($"No '{Constants.ResultFileName}' was found in '{settings.SourceFolder}' to restore from.");
+
+		// A stale result json is only consumed on an explicit restore run.
+		TodoCollection todos = settings.Restore
 			? _todoService.GetTodos(settings, _fileProvider.ReadAllText(jsonFilePath))
 			: _todoService.GetTodos(settings);
 
@@ -83,23 +83,7 @@ internal sealed class ConvertCommand(
 			return 1;
 		}
 
-		_todoService.GetTodosDone(todos, settings, jsonExists);
+		_todoService.GetTodosDone(todos, settings, settings.Restore);
 		return 0;
 	}
-
-	private ImageType InferSourceFormat(string sourceFolder)
-	{
-		ImageType[] present = [.. Enum.GetValues<ImageType>().Where(format => HasFilesOfFormat(sourceFolder, format))];
-
-		return present.Length switch
-		{
-			1 => present[0],
-			0 => throw new CommandException($"No convertible image files were found in '{sourceFolder}'."),
-			_ => throw new CommandException("The source folder holds more than one image format. Specify '--from'.")
-		};
-	}
-
-	private bool HasFilesOfFormat(string sourceFolder, ImageType format)
-		=> format.GetFileExtensions()
-			.Any(extension => _directoryProvider.GetFiles(sourceFolder, $"*.{extension}", SearchOption.AllDirectories).Length > 0);
 }

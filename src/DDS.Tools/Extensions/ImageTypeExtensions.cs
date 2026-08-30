@@ -12,8 +12,10 @@ namespace DDS.Tools.Extensions;
 /// <summary>
 /// The image type extensions class.
 /// </summary>
-internal static class ImageTypeExtensions
+internal static partial class ImageTypeExtensions
 {
+	private static readonly ImageType[] SupportedImageTypes = Enum.GetValues<ImageType>();
+
 	/// <summary>
 	/// Returns every file extension (without a leading dot) that identifies the
 	/// provided <paramref name="imageType"/> on disk.
@@ -40,4 +42,33 @@ internal static class ImageTypeExtensions
 	/// <exception cref="ArgumentOutOfRangeException">If the image type is not supported.</exception>
 	internal static string GetPrimaryExtension(this ImageType imageType)
 		=> imageType.GetFileExtensions()[0];
+
+	/// <summary>
+	/// Resolves the <see cref="ImageType"/> that owns the provided file extension or
+	/// file name, mirroring <see cref="GetFileExtensions(ImageType)"/>.
+	/// </summary>
+	/// <param name="extensionOrFileName">A file extension (with or without a leading dot) or a file name.</param>
+	/// <param name="imageType">The resolved image type when the lookup succeeds.</param>
+	/// <returns><see langword="true"/> when the extension maps to a known image type.</returns>
+	internal static bool TryGetImageType(string extensionOrFileName, out ImageType imageType)
+	{
+		string extension = Path.GetExtension(extensionOrFileName);
+
+		if (extension.Length.Equals(0))
+			extension = extensionOrFileName;
+
+		extension = extension.TrimStart('.').ToLowerInvariant();
+
+		foreach (ImageType candidate in SupportedImageTypes)
+		{
+			if (candidate.GetFileExtensions().Contains(extension))
+			{
+				imageType = candidate;
+				return true;
+			}
+		}
+
+		imageType = default;
+		return false;
+	}
 }
