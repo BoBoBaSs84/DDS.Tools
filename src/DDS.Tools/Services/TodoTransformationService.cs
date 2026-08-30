@@ -6,7 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
 using DDS.Tools.Enumerators;
-using DDS.Tools.Extensions;
 using DDS.Tools.Imaging;
 using DDS.Tools.Interfaces.Imaging;
 using DDS.Tools.Interfaces.Providers;
@@ -61,12 +60,15 @@ internal sealed class TodoTransformationService(
 	}
 
 	private static bool IsDuplicate(TodoModel todo, ConvertSettings settings, ISet<string> processedHashes)
-		=> DeduplicatesByHash(settings.ConvertMode) && processedHashes.Contains(todo.FileHash);
+		=> !settings.Restore && DeduplicatesByHash(settings.ConvertMode) && processedHashes.Contains(todo.FileHash);
 
 	private void TransferImage(ConvertSettings settings, TodoModel todo)
 	{
+		// On a restore run the target format travels per file; otherwise it is the setting.
+		ImageType targetFormat = todo.TargetType ?? settings.To;
+
 		ImageCanvas canvas = _codecRegistry
-			.GetDecoder(settings.SourceFormat)
+			.GetDecoder(todo.SourceType)
 			.Decode(_fileProvider.ReadAllBytes(todo.FullPathName));
 
 		string targetFolder = PrepareTargetFolder(settings, canvas, todo);
@@ -77,14 +79,17 @@ internal sealed class TodoTransformationService(
 		string newFileName = GetTargetFileName(settings, todo);
 
 		// The grouping mode copies the source untouched, every other mode re-encodes.
-		if (settings.ConvertMode.Equals(ConvertModeType.Grouping))
+		if (settings.ConvertMode.Equals(ConvertModeType.Grouping) && !settings.Restore)
 		{
 			_fileProvider.Copy(todo.FullPathName, _pathProvider.Combine(targetFolder, newFileName));
+			todo.FileName = newFileName;
 			return;
 		}
 
-		byte[] encoded = _codecRegistry.GetEncoder(settings.To).Encode(canvas, settings.Compression);
-		_fileProvider.WriteAllBytes(_pathProvider.Combine(targetFolder, $"{newFileName}.{settings.To}"), encoded);
+		byte[] encoded = _codecRegistry.GetEncoder(targetFormat).Encode(canvas, settings.Compression);
+		string writtenName = $"{newFileName}.{targetFormat}";
+		_fileProvider.WriteAllBytes(_pathProvider.Combine(targetFolder, writtenName), encoded);
+		todo.FileName = writtenName;
 	}
 
 	private static bool DeduplicatesByHash(ConvertModeType convertMode)
@@ -93,6 +98,10 @@ internal sealed class TodoTransformationService(
 	private string PrepareTargetFolder(ConvertSettings settings, ImageCanvas canvas, TodoModel todo)
 	{
 		string newTargetFolder = todo.TargetFolder;
+
+		// A restore run always rebuilds the recorded folder tree.
+		if (settings.Restore)
+			return $"{newTargetFolder}{todo.RelativePath}";
 
 		if (settings.ConvertMode.Equals(ConvertModeType.Automatic))
 		{
@@ -116,6 +125,9 @@ internal sealed class TodoTransformationService(
 
 	private static string GetTargetFileName(ConvertSettings settings, TodoModel todo)
 	{
+		if (settings.Restore)
+			return Path.GetFileNameWithoutExtension(todo.OriginalName);
+
 		if (settings.ConvertMode == ConvertModeType.Manual && settings.RetainStructure)
 		{
 			FileInfo info = new(todo.FullPathName);

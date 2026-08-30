@@ -8,7 +8,6 @@
 using System.ComponentModel;
 
 using DDS.Tools.Enumerators;
-using DDS.Tools.Exceptions;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -80,18 +79,21 @@ public sealed class ConvertSettings : CommandSettings
 	public CompressionLevel Compression { get; set; } = CompressionLevel.Balanced;
 
 	/// <summary>
-	/// The resolved source format. Only valid once <see cref="From"/> has been set,
-	/// either from the command line or by inference.
+	/// Restore edited files back to the original format recorded in the source
+	/// folder's <c>Result.json</c>.
 	/// </summary>
-	/// <exception cref="CommandException">If the source format is still unknown.</exception>
-	internal ImageType SourceFormat
-		=> From ?? throw new CommandException("The source image format could not be determined.");
+	[Description("Restore files to the original format recorded in the source folder's Result.json.")]
+	[CommandOption("-x|--restore")]
+	public bool Restore { get; set; }
 
 	/// <inheritdoc/>
 	public override ValidationResult Validate()
 	{
-		if (!Enum.IsDefined(To))
+		if (!Restore && !Enum.IsDefined(To))
 			return ValidationResult.Error("The target format '--to' is required.");
+
+		if (Restore && From is not null)
+			return ValidationResult.Error("The '--from' option cannot be combined with '--restore'.");
 
 		if (From is not null && From.Value.Equals(To))
 			return ValidationResult.Error("The source and target format must differ.");
