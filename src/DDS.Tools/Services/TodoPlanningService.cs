@@ -10,7 +10,6 @@ using BB84.Extensions.Serialization;
 
 using DDS.Tools.Enumerators;
 using DDS.Tools.Exceptions;
-using DDS.Tools.Extensions;
 using DDS.Tools.Interfaces.Providers;
 using DDS.Tools.Models;
 using DDS.Tools.Settings;
@@ -40,7 +39,7 @@ internal sealed class TodoPlanningService(
 		// mix of formats; an explicit '--from' restricts the run to that single format.
 		IEnumerable<ImageType> formats = settings.From is not null
 			? [settings.From.Value]
-			: Enum.GetValues<ImageType>();
+			: ImageTypeExtensions.GetValuesFast();
 
 		// The source folder may be relative or carry a trailing separator, while the file
 		// information always reports an absolute path, so normalize before relating the two.
@@ -48,10 +47,9 @@ internal sealed class TodoPlanningService(
 
 		foreach (ImageType format in formats)
 		{
-			string[] files = format.GetFileExtensions()
+			string[] files = [.. format.GetFileExtensions()
 				.SelectMany(extension => _directoryProvider.GetFiles(settings.SourceFolder, $"*.{extension}", SearchOption.AllDirectories))
-				.Distinct()
-				.ToArray();
+				.Distinct()];
 
 			foreach (string file in files)
 				MapTodoFromFile(todos, settings, sourceFolder, file, format);

@@ -6,7 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 // -----------------------------------------------------------------------------
 using DDS.Tools.Exceptions;
-using DDS.Tools.Tests;
 
 namespace DDS.Tools.Tests.Exceptions;
 
