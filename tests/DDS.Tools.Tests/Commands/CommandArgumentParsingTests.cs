@@ -101,7 +101,7 @@ public sealed class CommandArgumentParsingTests
 	{
 		public static ConvertSettings? LastSettings { get; set; }
 
-		protected override int Execute(CommandContext context, ConvertSettings settings, CancellationToken cancellationToken)
+		public override int Execute(CommandContext context, ConvertSettings settings, CancellationToken cancellationToken)
 		{
 			LastSettings = settings;
 			return 0;

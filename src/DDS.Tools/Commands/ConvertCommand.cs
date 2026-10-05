@@ -44,7 +44,7 @@ internal sealed class ConvertCommand(
 		LoggerMessage.Define(LogLevel.Error, 0, "Exception occured.");
 
 	/// <inheritdoc/>
-	protected override int Execute(CommandContext context, ConvertSettings settings, CancellationToken cancellationToken)
+	public override int Execute(CommandContext context, ConvertSettings settings, CancellationToken cancellationToken)
 	{
 		try
 		{
