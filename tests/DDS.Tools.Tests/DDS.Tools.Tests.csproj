@@ -1,13 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 	<PropertyGroup>
-		<IsTestProject>True</IsTestProject>
-		<IsPackable>False</IsPackable>
 		<!-- Match the Windows-only native DirectXTex payload pulled in transitively. -->
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Moq" />
-		<PackageReference Include="MSTest" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\DDS.Tools\DDS.Tools.csproj" />
