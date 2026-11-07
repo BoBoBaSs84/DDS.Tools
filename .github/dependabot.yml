@@ -1,34 +1,66 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
+# Dependabot configuration.
+# Version updates run weekly and are grouped per package family. Major bumps
+# get their own PR. Security updates are not affected by the schedule and
+# arrive right away.
 version: 2
+
 updates:
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "05:00"
-    assignees:
-      - "BoBoBaSs84"
+      time: "04:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 10
+    assignees: ["BoBoBaSs84"]
+    labels: ["dependencies", "nuget"]
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "Microsoft.*"
+        update-types: ["version-update:semver-major"]
     groups:
-      bb84-dependencies:
+      bb84:
+        patterns: ["BB84.*"]
+        update-types: ["minor", "patch"]
+      microsoft:
         patterns:
-          - "BB84*"
-      mstest-dependencies:
-        patterns:
-          - "MSTest*"
-      microsoft-dependencies:
-        patterns:
-          - "Microsoft*"
-      
+          - "Microsoft.*"
+        update-types: ["minor", "patch"]
+      other:
+        patterns: ["Hexa.NET.DirectXTex", "Moq", "Spectre.*"]
+        update-types: ["minor", "patch"]
+      security:
+        applies-to: "security-updates"
+        patterns: ["*"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "05:00"
-    assignees:
-      - "BoBoBaSs84"
+      time: "04:00"
+      timezone: "Europe/Berlin"
+    assignees: ["BoBoBaSs84"]
+    labels: ["dependencies", "github-actions"]
+    commit-message:
+      prefix: "ci(deps)"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: "dotnet-sdk"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Europe/Berlin"
+    assignees: ["BoBoBaSs84"]
+    labels: ["dependencies", "dotnet-sdk"]
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
